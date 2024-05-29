@@ -5,8 +5,9 @@ import numpy as np
 from scipy.interpolate import interp1d
 from scipy.signal import convolve2d
 from sklearn.linear_model import LinearRegression
+import os
 
-def generate_graphics(values, ROIs_filename, xdim, ydim, zdim):
+def generate_graphics(values, ROIs_filename, xdim, ydim, zdim, input_path):
 	sp_list_filename = 'sp_NP6.txt'
 	cp_list_filename = 'cp_NP6.txt'
 
@@ -217,8 +218,9 @@ def generate_graphics(values, ROIs_filename, xdim, ydim, zdim):
 	for i in np.arange(N1):
 		index = i + N0
 		filename = 'input_images_frame{}.nii'.format(i + 1)
+		filepath = os.path.join(input_path, filename)
 		finalized_input = nib.Nifti1Image(image_4D[:,:,:,index], affine=np.eye(4))
-		nib.save(finalized_input, filename)
+		nib.save(finalized_input, filepath)
 
 	with open(sp_list_filename, 'w') as file:
 		for value in sp_NP6:

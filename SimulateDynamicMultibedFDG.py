@@ -5,6 +5,7 @@ import GenerateCompartmentalImages
 import MainPETSimulateReconstruct
 import FitReconstructedImages
 import json
+import os
 
 
 def main_simulate_reconstruct():
@@ -15,6 +16,8 @@ def main_simulate_reconstruct():
         
     ROIs_filename = config["ROIs_filename"]
     output_filename = config["output_filename"]
+    output_path = config["output_path"]
+    input_path = config["input_path"]
     mu_map_file = config["mu_map_file"]
     xdim = config["xdim"]
     ydim = xdim
@@ -45,32 +48,36 @@ def main_simulate_reconstruct():
     mu_map_3D = np.zeros((xdim, ydim, zdim))
     mu_map_slice = np.zeros((xdim, ydim))
 
-    mu_map_3D = nib.load('NCAT_128x128x47_0347x0347x0327_atn_invmm.nii').get_fdata()
+    mu_map_filepath = os.path.join(input_path, mu_map_file)
+    mu_map_3D = nib.load(mu_map_filepath).get_fdata()
 
     bin_size = transaxial_FOV / xdim
     if mu_units == 1:
         mu_map_3D = mu_map_3D * bin_size
 
-    GenerateCompartmentalImages.generate_graphics(values, ROIs_filename, xdim, ydim, zdim)
+    ROIs_filepath = os.path.join(input_path, ROIs_filename)
+    GenerateCompartmentalImages.generate_graphics(values, ROIs_filepath, xdim, ydim, zdim, input_path)
 
     for frame in np.arange(frames):
         print("Reconstructing frame: ", frame+1)
         frn = int(frame) + 1
         frame_name = 'input_images_frame' + str(frn) + '.nii'
+        frame_path = os.path.join(input_path, frame_name)
         frame_object = np.zeros((xdim, ydim, zdim))
         frame_object_slice = np.zeros((xdim, ydim))
-        frame_object = nib.load(frame_name).get_fdata()
+        frame_object = nib.load(frame_path).get_fdata()
 
         for z in np.arange(zdim):
             mu_map_slice = mu_map_3D[:, :, z]
             frame_object_slice = frame_object[:,:,z]
-            final_image_3D[:, :, z] = MainPETSimulateReconstruct.perform_reconstruction(frame_object_slice, mu_map_slice, ITERATIONS, SUBSETS, xdim, bin_size, voxel_size, d_z, ScanDuration)
+            final_image_3D[:, :, z] = MainPETSimulateReconstruct.perform_reconstruction(frame_object_slice, mu_map_slice, ITERATIONS, SUBSETS, xdim, bin_size, voxel_size, d_z, ScanDuration, input_path)
 
         finalized_image = nib.Nifti1Image(final_image_3D, affine=np.eye(4))
         filename = "output_images_frame{}_recon_it{}_subset{}.nii".format(frame+1, ITERATIONS, SUBSETS)
-        nib.save(finalized_image, filename)
+        filepath = os.path.join(output_path, filename)
+        nib.save(finalized_image, filepath)
 
-    FitReconstructedImages.fitImages(frames, xdim, ydim, zdim, ITERATIONS, SUBSETS)
+    FitReconstructedImages.fitImages(frames, xdim, ydim, zdim, ITERATIONS, SUBSETS, output_path)
 
     t1 = time.time()
     print("Time elapsed: ", t1 - t0)

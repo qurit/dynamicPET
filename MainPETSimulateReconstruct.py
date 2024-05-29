@@ -12,7 +12,7 @@ import GeneratePSFKernels
 import GenerateSensitivitySinogram
 import CalculateScalingFactor
 
-def perform_reconstruction(image_input, atten_input, ITERATIONS, SUBSETS, xdim, bin_size, voxel_size, d_z, ScanDuration):
+def perform_reconstruction(image_input, atten_input, ITERATIONS, SUBSETS, xdim, bin_size, voxel_size, d_z, ScanDuration, input_path):
     PSF_Kernel = 1
 
     Num_Noise_Realz = 1
@@ -100,10 +100,12 @@ def perform_reconstruction(image_input, atten_input, ITERATIONS, SUBSETS, xdim, 
     if LOAD_NORMALIZATION:
         if xdim == 128:
             norm_original_file = 'norm_map_128.nii'
-            norm_original = nib.load(norm_original_file).get_fdata()
+            norm_original_filepath = os.path.join(input_path, norm_original_file)
+            norm_original = nib.load(norm_original_filepath).get_fdata()
         elif xdim == 256:
             norm_original_file = 'norm_map_256.nii'
-            norm_original = nib.load(norm_original_file).get_fdata()
+            norm_original_filepath = os.path.join(input_path, norm_original_file)
+            norm_original = nib.load(norm_original_filepath).get_fdata()
 
         if norm_original.shape[0] * norm_original.shape[1] != NUM_BINS * thdim:
             norm_original = st.resize(norm_original, (NUM_BINS, int(thdim)), order=1, preserve_range=True)

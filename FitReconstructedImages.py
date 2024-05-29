@@ -1,8 +1,9 @@
 import numpy as np
 import nibabel as nib
 from sklearn.linear_model import LinearRegression
+import os
 
-def fitImages(total_frames, xsize, ysize, zsize, ITERATIONS, SUBSETS):
+def fitImages(total_frames, xsize, ysize, zsize, ITERATIONS, SUBSETS, output_path):
 	sp_list_filename = 'sp_NP6.txt'
 	cp_list_filename = 'cp_NP6.txt'
 
@@ -12,7 +13,8 @@ def fitImages(total_frames, xsize, ysize, zsize, ITERATIONS, SUBSETS):
 	image = np.zeros((xsize, ysize, zsize, total_frames))
 	for frame in range(0, total_frames):
 		fname = 'output_images_frame'+ str(frame + 1) + '_recon_it' + str(ITERATIONS) + '_subset' + str(SUBSETS) + '.nii'
-		outImage = nib.load(fname).get_fdata()
+		fpath = os.path.join(output_path, fname)
+		outImage = nib.load(fpath).get_fdata()
 		for zz in range(0, zsize):
 			image[:,:,zz,frame] = outImage[:, :, zz]
 
@@ -48,5 +50,8 @@ def fitImages(total_frames, xsize, ysize, zsize, ITERATIONS, SUBSETS):
 	filename_K = "output_images_recon_it{}_subset{}_K.nii".format(ITERATIONS, SUBSETS)
 	filename_B = "output_images_recon_it{}_subset{}_B.nii".format(ITERATIONS, SUBSETS)
 
-	nib.save(finalized_K_image, filename_K)
-	nib.save(finalized_B_image, filename_B)
+	filepath_K = os.path.join(output_path, filename_K)
+	filepath_B = os.path.join(output_path, filename_B)
+
+	nib.save(finalized_K_image, filepath_K)
+	nib.save(finalized_B_image, filepath_B)
