@@ -7,9 +7,9 @@ from scipy.signal import convolve2d
 from sklearn.linear_model import LinearRegression
 import os
 
-def generate_graphics(values, ROIs_filename, xdim, ydim, zdim, input_path):
-	sp_list_filename = 'sp_NP6.txt'
-	cp_list_filename = 'cp_NP6.txt'
+def generate_graphics(values, ROIs_filename, xdim, ydim, zdim, working_path):
+	sp_list_filename = os.path.join(working_path, 'sp_NP6.txt')
+	cp_list_filename = os.path.join(working_path, 'cp_NP6.txt')
 
 	plot_shape0 = ["b","r","g","c","k","b","r","g","c","k","b"]
 	plot_shape1 = [":","--","-.","-","-","--","-.","-",":","--"]
@@ -218,7 +218,7 @@ def generate_graphics(values, ROIs_filename, xdim, ydim, zdim, input_path):
 	for i in np.arange(N1):
 		index = i + N0
 		filename = 'input_images_frame{}.nii'.format(i + 1)
-		filepath = os.path.join(input_path, filename)
+		filepath = os.path.join(working_path, filename)
 		finalized_input = nib.Nifti1Image(image_4D[:,:,:,index], affine=np.eye(4))
 		nib.save(finalized_input, filepath)
 
@@ -232,8 +232,10 @@ def generate_graphics(values, ROIs_filename, xdim, ydim, zdim, input_path):
 
 	finalizedKImage = nib.Nifti1Image(K_image, affine=np.eye(4))
 	KImageFilename = 'standard_fit_K_image.nii'
-	nib.save(finalizedKImage, KImageFilename)
+	KImageFilepath = os.path.join(working_path, KImageFilename)
+	nib.save(finalizedKImage, KImageFilepath)
 
 	finalizedBImage = nib.Nifti1Image(B_image, affine=np.eye(4))
 	BImageFilename = 'standard_fit_B_image.nii'
-	nib.save(finalizedBImage, BImageFilename)
+	BImageFilepath = os.path.join(working_path, BImageFilename)
+	nib.save(finalizedBImage, BImageFilepath)

@@ -3,6 +3,7 @@
     "output_filename": "output_images",
     "output_path": "/home/jfowler/projects/dynamicPET/Output",
     "input_path": "/home/jfowler/projects/dynamicPET/Input",
+    "working_path": "/home/jfowler/projects/dynamicPET/Working Files",
     "mu_map_file": "NCAT_128x128x47_0347x0347x0327_atn_invmm.nii",
     "xdim": 128,
     "zdim": 47,

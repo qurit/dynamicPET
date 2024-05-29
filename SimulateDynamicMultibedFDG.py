@@ -18,6 +18,7 @@ def main_simulate_reconstruct():
     output_filename = config["output_filename"]
     output_path = config["output_path"]
     input_path = config["input_path"]
+    working_path = config["working_path"]
     mu_map_file = config["mu_map_file"]
     xdim = config["xdim"]
     ydim = xdim
@@ -56,13 +57,13 @@ def main_simulate_reconstruct():
         mu_map_3D = mu_map_3D * bin_size
 
     ROIs_filepath = os.path.join(input_path, ROIs_filename)
-    GenerateCompartmentalImages.generate_graphics(values, ROIs_filepath, xdim, ydim, zdim, input_path)
+    GenerateCompartmentalImages.generate_graphics(values, ROIs_filepath, xdim, ydim, zdim, working_path)
 
     for frame in np.arange(frames):
         print("Reconstructing frame: ", frame+1)
         frn = int(frame) + 1
         frame_name = 'input_images_frame' + str(frn) + '.nii'
-        frame_path = os.path.join(input_path, frame_name)
+        frame_path = os.path.join(working_path, frame_name)
         frame_object = np.zeros((xdim, ydim, zdim))
         frame_object_slice = np.zeros((xdim, ydim))
         frame_object = nib.load(frame_path).get_fdata()
