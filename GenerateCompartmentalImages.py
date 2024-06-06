@@ -6,6 +6,7 @@ from scipy.interpolate import interp1d
 from scipy.signal import convolve2d
 from sklearn.linear_model import LinearRegression
 import os
+from tqdm import tqdm
 
 def generate_graphics(values, ROIs_filename, xdim, ydim, zdim, working_path):
 	sp_list_filename = os.path.join(working_path, 'sp_NP6.txt')
@@ -192,6 +193,7 @@ def generate_graphics(values, ROIs_filename, xdim, ydim, zdim, working_path):
 			ax.plot(t, C)
 
 		Legend = ['Myocardium','Blood','Background','Liver','Lung','Liver Tumor','Lung Tumor']
+		# Legend = ['Myocardium','Blood','Background','Liver','Lung']
 		plt.legend([Legend[index]])
 		plt.show(block=False)
 
@@ -200,7 +202,7 @@ def generate_graphics(values, ROIs_filename, xdim, ydim, zdim, working_path):
 
 	flag = 0
 
-	for xx in np.arange(xdim):
+	for xx in tqdm(np.arange(xdim)):
 		for yy in np.arange(ydim):
 			for zz in np.arange(zdim):
 				index = int(ROI_image[xx, yy, zz])

@@ -141,10 +141,9 @@ def perform_reconstruction(image_input, atten_input, ITERATIONS, SUBSETS, xdim, 
             y_calc = y_axis - math.floor((y_axis - 1)/2) - 1
 
             norm = np.linalg.norm((x_calc, y_calc))
+            diag = math.ceil(2 * norm)
 
-            norm = math.ceil(norm)
-
-            Y_bar0 = np.zeros((2 * norm, angles_m, SUBSETS))
+            Y_bar0 = np.zeros((diag, angles_m, SUBSETS))
             Y_bar = np.zeros((NUM_BINS, thdim_m, SUBSETS))
 
             atten = np.ones((NUM_BINS, thdim_m, SUBSETS))
@@ -230,8 +229,7 @@ def perform_reconstruction(image_input, atten_input, ITERATIONS, SUBSETS, xdim, 
                     convolFINAL = np.squeeze(KernelsSet[:,:,nrv])
                     convolFINAL_tr = np.transpose(convolFINAL)
                     for tmpRealz in range(0, tmp_NOISE_REALZ_Mean_Recon_Img):
-                        print('Reconstructing ' + T1 + ', ' + T2 + ', Realization #' + str(tmpRealz+1) + ' of ' + str(tmp_NOISE_REALZ_Mean_Recon_Img) + ', for PSF #' + str(nrv+1) + ' of ' + str(NUMVAR) + ' @ ' + str(time.time()) + ' sec')
-                        print(' ')
+                        # print('Reconstructing ' + T1 + ', ' + T2 + ', Realization #' + str(tmpRealz+1) + ' of ' + str(tmp_NOISE_REALZ_Mean_Recon_Img) + ', for PSF #' + str(nrv+1) + ' of ' + str(NUMVAR) + ' @ ' + str(time.time()) + ' sec')
                         image_old = unit_vector_image
                         for iter in range (0, ITERATIONS):
                             for sub in range(0, SUBSETS):
@@ -272,7 +270,6 @@ def perform_reconstruction(image_input, atten_input, ITERATIONS, SUBSETS, xdim, 
 
                                 image_new = image_old * ratio2_inverseRadon / sensit_image
                                 image_new[np.isnan(image_new)] = 0
-                                image_old3 = image_old
                                 image_old = image_new
 
                             if noisy == 2:

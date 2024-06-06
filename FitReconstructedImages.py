@@ -2,8 +2,9 @@ import numpy as np
 import nibabel as nib
 from sklearn.linear_model import LinearRegression
 import os
+from tqdm import tqdm
 
-def fitImages(total_frames, xsize, ysize, zsize, ITERATIONS, SUBSETS, output_path):
+def fitImages(total_frames, xsize, ysize, zsize, ITERATIONS, SUBSETS, output_path, working_path):
 	sp_list_filename = os.path.join(working_path, 'sp_NP6.txt')
 	cp_list_filename = os.path.join(working_path, 'cp_NP6.txt')
 
@@ -23,7 +24,7 @@ def fitImages(total_frames, xsize, ysize, zsize, ITERATIONS, SUBSETS, output_pat
 	K_image = np.zeros((xsize, ysize, zsize))
 	B_image = np.zeros((xsize, ysize, zsize))
 
-	for xx in range(0, xsize):
+	for xx in tqdm(range(0, xsize)):
 		for yy in range(0, ysize):
 			for zz in range(0, zsize):
 				C = np.squeeze(image[xx, yy, zz, :])
