@@ -12,7 +12,7 @@ from tqdm import tqdm
 def main():
     t0 = time.time()
 
-    with open("config.json", 'r') as f:
+    with open("input/config.json", 'r') as f:
         config = json.load(f)
         
     ROIs_filename = config["ROIs_filename"]
@@ -41,6 +41,9 @@ def main():
     Tumors_in_lung = [0.044, 0.231, 1.149, 0.259, 0]
     values = [Background, Bloodpool, Myocardium, Normal_Liver, Normal_Lung, Tumors_in_liver, Tumors_in_lung]
     # values = [Bloodpool, Background, Myocardium, Normal_Liver, Normal_Lung]
+
+    if not os.path.exists(output_path):
+        os.makedirs(output_path)
 
     mu_map_filepath = os.path.join(input_path, mu_map_file)
     mu_map_3D = nib.load(mu_map_filepath).get_fdata()
