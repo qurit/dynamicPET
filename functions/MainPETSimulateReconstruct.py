@@ -7,10 +7,10 @@ import numpy as np
 import skimage.transform as st
 from scipy.signal import convolve2d
 from skimage.transform import radon, iradon
-import CalculateCalibrationFactor
-import GeneratePSFKernels
-import GenerateSensitivitySinogram
-import CalculateScalingFactor
+from functions.CalculateCalibrationFactor import calib_factor
+from functions.GeneratePSFKernels import generate_PSF_kernels
+from functions.GenerateSensitivitySinogram import gen_sens_sino
+from functions.CalculateScalingFactor import scaling_factor
 
 def perform_reconstruction(image_input, atten_input, ITERATIONS, SUBSETS, xdim, bin_size, voxel_size, d_z, ScanDuration, input_path):
     PSF_Kernel = 1
@@ -56,7 +56,7 @@ def perform_reconstruction(image_input, atten_input, ITERATIONS, SUBSETS, xdim, 
     theta_m = theta.reshape((round(len(theta)/SUBSETS), SUBSETS))
     angles_m = len(theta_m)
 
-    KernelFull_hold, KernelFull, KernelsSet_hold, KernelsSet, NUMVAR = GeneratePSFKernels.generate_PSF_kernels(PSF_Kernel, xdim, SUBSETS, NUM_BINS, bin_size)
+    KernelFull_hold, KernelFull, KernelsSet_hold, KernelsSet, NUMVAR = generate_PSF_kernels(PSF_Kernel, xdim, SUBSETS, NUM_BINS, bin_size)
 
     TmrCount = 1
 
@@ -155,13 +155,13 @@ def perform_reconstruction(image_input, atten_input, ITERATIONS, SUBSETS, xdim, 
 
             norm_image = norm_original.reshape(NUM_BINS, thdim_m, SUBSETS)
             sensit_image_all = np.zeros((xdim, ydim, SUBSETS, NUMVAR))
-            sensit_image_all = GenerateSensitivitySinogram.gen_sens_sino(KernelsSet, atten, norm_image, NUMVAR, SUBSETS, RECONST_RM, theta_m, xdim, ydim, filter_tr, iRadonInterp)
+            sensit_image_all = gen_sens_sino(KernelsSet, atten, norm_image, NUMVAR, SUBSETS, RECONST_RM, theta_m, xdim, ydim, filter_tr, iRadonInterp)
 
             lambda_val = 0.0063
             start_time = 60
             end_time = start_time + ScanDuration
-            calibration_factor = CalculateCalibrationFactor.calib_factor(xdim, ydim, VCT_sensitivity, theta_m, norm_image, NUM_BINS)
-            scale_factor = CalculateScalingFactor.scaling_factor(AOC_unit, voxel_size/HiResScale/10, voxel_size/HiResScale/10, d_z/10, start_time, end_time, lambda_val, calibration_factor, IMAGE_DECAYED)
+            calibration_factor = calib_factor(xdim, ydim, VCT_sensitivity, theta_m, norm_image, NUM_BINS)
+            scale_factor = scaling_factor(AOC_unit, voxel_size/HiResScale/10, voxel_size/HiResScale/10, d_z/10, start_time, end_time, lambda_val, calibration_factor, IMAGE_DECAYED)
 
             SIG_ABS = np.zeros((len(range(BkgndBox[0], BkgndBox[1] + 1)), len(range(BkgndBox[2], BkgndBox[3] + 1)), ITERATIONS, NOISE_REALZ_Mean_Recon_Img, NUMVAR), dtype=np.float32)
             SIG_ABS_NF = np.zeros((len(range(BkgndBox[0], BkgndBox[1] + 1)), len(range(BkgndBox[2], BkgndBox[3] + 1)), ITERATIONS, NOISE_REALZ_Mean_Recon_Img, NUMVAR), dtype=np.float32)

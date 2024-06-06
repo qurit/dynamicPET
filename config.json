@@ -1,9 +1,9 @@
 {
     "ROIs_filename": "NCAT_128x128x47_0347x0347x0327_regions.nii",
     "output_filename": "output_images",
-    "output_path": "/home/jfowler/projects/dynamicPET/Output",
-    "input_path": "/home/jfowler/projects/dynamicPET/Input",
-    "working_path": "/home/jfowler/projects/dynamicPET/Working Files",
+    "output_path": "/home/jfowler/projects/dynamicPET/output",
+    "input_path": "/home/jfowler/projects/dynamicPET/input",
+    "working_path": "/home/jfowler/projects/dynamicPET/working files",
     "mu_map_file": "NCAT_128x128x47_0347x0347x0327_atn_invmm.nii",
     "frames": 1,
     "transaxial_FOV": 600,

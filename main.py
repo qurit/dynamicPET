@@ -1,15 +1,15 @@
 import time
 import nibabel as nib
 import numpy as np
-import GenerateCompartmentalImages
-import MainPETSimulateReconstruct
-import FitReconstructedImages
+from functions.GenerateCompartmentalImages import generate_graphics
+from functions.MainPETSimulateReconstruct import perform_reconstruction
+from functions.FitReconstructedImages import fitImages
 import json
 import os
 from tqdm import tqdm
 
 
-def main_simulate_reconstruct():
+def main():
     t0 = time.time()
 
     with open("config.json", 'r') as f:
@@ -60,7 +60,7 @@ def main_simulate_reconstruct():
 
     ROIs_filepath = os.path.join(input_path, ROIs_filename)
     print('Generating Compartmental Images:')
-    GenerateCompartmentalImages.generate_graphics(values, ROIs_filepath, xdim, ydim, zdim, working_path)
+    generate_graphics(values, ROIs_filepath, xdim, ydim, zdim, working_path)
 
     for frame in np.arange(frames):
         print("Simulating and Reconstructing Frame ", frame+1, ":")
@@ -74,7 +74,7 @@ def main_simulate_reconstruct():
         for z in tqdm(np.arange(zdim)):
             mu_map_slice = mu_map_3D[:, :, z]
             frame_object_slice = frame_object[:,:,z]
-            final_image_3D[:, :, z] = MainPETSimulateReconstruct.perform_reconstruction(frame_object_slice, mu_map_slice, ITERATIONS, SUBSETS, xdim, bin_size, voxel_size, d_z, ScanDuration, input_path)
+            final_image_3D[:, :, z] = perform_reconstruction(frame_object_slice, mu_map_slice, ITERATIONS, SUBSETS, xdim, bin_size, voxel_size, d_z, ScanDuration, input_path)
 
         finalized_image = nib.Nifti1Image(final_image_3D, affine=np.eye(4))
         filename = "output_images_frame{}_recon_it{}_subset{}.nii".format(frame+1, ITERATIONS, SUBSETS)
@@ -82,11 +82,12 @@ def main_simulate_reconstruct():
         nib.save(finalized_image, filepath)
 
     print("Fitting Reconstructed Images:")
-    FitReconstructedImages.fitImages(frames, xdim, ydim, zdim, ITERATIONS, SUBSETS, output_path, working_path)
+    fitImages(frames, xdim, ydim, zdim, ITERATIONS, SUBSETS, output_path, working_path)
 
     t1 = time.time()
     print("Time elapsed: ", t1 - t0)
     print("FDG Simulation Successful")
     input()
 
-main_simulate_reconstruct()
+if __name__ == "__main__":
+    main()
