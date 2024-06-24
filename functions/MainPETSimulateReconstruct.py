@@ -1,7 +1,6 @@
 import ctypes
 import math
 import os
-import time
 import nibabel as nib
 import numpy as np
 import skimage.transform as st
@@ -66,10 +65,7 @@ def perform_reconstruction(image_input, atten_input, ITERATIONS, SUBSETS, xdim, 
 
     iRadonInterp = 'linear'
 
-    inputHeight = image_true.shape[0]
-    inputWidth = image_true.shape[1]
-
-    HiResScale = input_xdim / xdim
+    HiResScale = input_xdim / xdim # to be updated - currently not used
 
     if not HIGH_RES_TRUE:
         if HiResScale != 1:
@@ -128,22 +124,10 @@ def perform_reconstruction(image_input, atten_input, ITERATIONS, SUBSETS, xdim, 
 
     for realz in np.arange(Num_Noise_Realz):
         for sig in ABS_PRS:
-            if sig == 1:
-                T1 = 'Signal Absent'
-            elif sig == 2:
-                T1 = 'Sig Present'
 
             true_image_data = image_true * image_correction
 
-            x_axis = true_image_data.shape[0]
-            y_axis = true_image_data.shape[1]
-            x_calc = x_axis - math.floor((x_axis - 1)/2) - 1
-            y_calc = y_axis - math.floor((y_axis - 1)/2) - 1
-
-            norm = np.linalg.norm((x_calc, y_calc))
-            diag = math.ceil(2 * norm)
-
-            Y_bar0 = np.zeros((diag, angles_m, SUBSETS))
+            Y_bar0 = np.zeros((NUM_BINS, angles_m, SUBSETS))
             Y_bar = np.zeros((NUM_BINS, thdim_m, SUBSETS))
 
             atten = np.ones((NUM_BINS, thdim_m, SUBSETS))

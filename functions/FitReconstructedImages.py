@@ -4,9 +4,9 @@ from sklearn.linear_model import LinearRegression
 import os
 from tqdm import tqdm
 
-def fitImages(total_frames, xsize, ysize, zsize, ITERATIONS, SUBSETS, output_path, working_path):
-	sp_list_filename = os.path.join(working_path, 'sp_NP6.txt')
-	cp_list_filename = os.path.join(working_path, 'cp_NP6.txt')
+def fitImages(total_frames, xsize, ysize, zsize, ITERATIONS, SUBSETS, output_path):
+	sp_list_filename = os.path.join(output_path, 'sp_NP6.txt')
+	cp_list_filename = os.path.join(output_path, 'cp_NP6.txt')
 
 	sp_list = np.loadtxt(sp_list_filename)
 	cp_list = np.loadtxt(cp_list_filename)

@@ -19,7 +19,6 @@ def main():
     output_filename = config["output_filename"]
     output_path = config["output_path"]
     input_path = config["input_path"]
-    working_path = config["working_path"]
     mu_map_file = config["mu_map_file"]
     frames = config["frames"]
     transaxial_FOV = config["transaxial_FOV"]
@@ -63,13 +62,13 @@ def main():
 
     ROIs_filepath = os.path.join(input_path, ROIs_filename)
     print('Generating Compartmental Images:')
-    generate_graphics(values, ROIs_filepath, xdim, ydim, zdim, working_path)
+    generate_graphics(values, ROIs_filepath, xdim, ydim, zdim, output_path)
 
     for frame in np.arange(frames):
         print("Simulating and Reconstructing Frame ", frame+1, ":")
         frn = int(frame) + 1
         frame_name = 'input_images_frame' + str(frn) + '.nii'
-        frame_path = os.path.join(working_path, frame_name)
+        frame_path = os.path.join(output_path, frame_name)
         frame_object = np.zeros((xdim, ydim, zdim))
         frame_object_slice = np.zeros((xdim, ydim))
         frame_object = nib.load(frame_path).get_fdata()
@@ -80,17 +79,16 @@ def main():
             final_image_3D[:, :, z] = perform_reconstruction(frame_object_slice, mu_map_slice, ITERATIONS, SUBSETS, xdim, bin_size, voxel_size, d_z, ScanDuration, input_path)
 
         finalized_image = nib.Nifti1Image(final_image_3D, affine=np.eye(4))
-        filename = "output_images_frame{}_recon_it{}_subset{}.nii".format(frame+1, ITERATIONS, SUBSETS)
+        filename = "{}_frame{}_recon_it{}_subset{}.nii".format(output_filename, frame+1, ITERATIONS, SUBSETS)
         filepath = os.path.join(output_path, filename)
         nib.save(finalized_image, filepath)
 
     print("Fitting Reconstructed Images:")
-    fitImages(frames, xdim, ydim, zdim, ITERATIONS, SUBSETS, output_path, working_path)
+    fitImages(frames, xdim, ydim, zdim, ITERATIONS, SUBSETS, output_path)
 
     t1 = time.time()
     print("Time elapsed: ", t1 - t0)
     print("FDG Simulation Successful")
-    input()
 
 if __name__ == "__main__":
     main()
