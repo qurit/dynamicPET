@@ -11,7 +11,7 @@ from functions.GeneratePSFKernels import generate_PSF_kernels
 from functions.GenerateSensitivitySinogram import gen_sens_sino
 from functions.CalculateScalingFactor import scaling_factor
 
-def perform_reconstruction(image_input, atten_input, ITERATIONS, SUBSETS, xdim, bin_size, voxel_size, d_z, ScanDuration, input_path):
+def perform_reconstruction(image_input, atten_input, ITERATIONS, SUBSETS, xdim, bin_size, voxel_size, d_z, ScanDuration, input_path, output_path):
     PSF_Kernel = 1
 
     Num_Noise_Realz = 1
@@ -306,15 +306,13 @@ def perform_reconstruction(image_input, atten_input, ITERATIONS, SUBSETS, xdim, 
                     if sig == 1:
                         Mean_SIG_ABS = MeanImg/NOISE_REALZ_Mean_Recon_Img
                         filename = 'SIG_ABS_NF__' + str(xdim) + '_R' + str(NOISE_REALZ_Mean_Recon_Img) + '_I' + str(ITERATIONS) + '_S' + str(SUBSETS) + '_K' + str(NUMVAR) + '_Tmr' + str(TmrCount) + '.nii'
-                        path = '..\\Output'
-                        final_image = nib.Nifti1Image(Mean_SIG_ABS, image_true.affine())
-                        nib.save(final_image, os.path.join(path, filename))
+                        final_image = nib.Nifti1Image(Mean_SIG_ABS, affine=np.eye(4))
+                        nib.save(final_image, os.path.join(output_path, filename))
                     elif sig == 2:
                         Mean_SIG_PRS = MeanImg/NOISE_REALZ_Mean_Recon_Img
                         filename = 'SIG_PRS_NF__' + str(xdim) + '_R' + str(NOISE_REALZ_Mean_Recon_Img) + '_I' + str(ITERATIONS) + '_S' + str(SUBSETS) + '_K' + str(NUMVAR) + '_Tmr' + str(TmrCount) + '.nii'
-                        path = '..\\Output'
-                        final_image = nib.Nifti1Image(Mean_SIG_PRS, image_true.affine())
-                        nib.save(final_image, os.path.join(path, filename))
+                        final_image = nib.Nifti1Image(Mean_SIG_PRS, affine=np.eye(4))
+                        nib.save(final_image, os.path.join(output_path, filename))
 
         Recon_Img[:, :] = MeanImg[:,:,ITERATIONS-1, 0]/NOISE_REALZ_Mean_Recon_Img
 

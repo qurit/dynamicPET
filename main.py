@@ -12,13 +12,11 @@ from tqdm import tqdm
 def main():
     t0 = time.time()
 
-    with open("input/config.json", 'r') as f:
+    with open("config.json", 'r') as f:
         config = json.load(f)
         
     ROIs_filename = config["ROIs_filename"]
     output_filename = config["output_filename"]
-    output_path = config["output_path"]
-    input_path = config["input_path"]
     mu_map_file = config["mu_map_file"]
     frames = config["frames"]
     transaxial_FOV = config["transaxial_FOV"]
@@ -31,7 +29,7 @@ def main():
     VCT_sensitivity = config["VCT_sensitivity"] / 1e6
     mu_units = config["mu_units"]
 
-    Background = [0.1, 1, 0, 0, 0.03]   # dependent on input file. move to config?
+    Background = [0.1, 1, 0, 0, 0.03]
     Bloodpool = [0, 1, 1, 1, 1]
     Myocardium = [0.6, 1.2, 0.1, 0.001, 0.05]
     Normal_Liver = [0.864, 0.981, 0.005, 0.016, 0]
@@ -39,7 +37,10 @@ def main():
     Tumors_in_liver = [0.243, 0.78, 0.1, 0, 0]
     Tumors_in_lung = [0.044, 0.231, 1.149, 0.259, 0]
     values = [Background, Bloodpool, Myocardium, Normal_Liver, Normal_Lung, Tumors_in_liver, Tumors_in_lung]
-    # values = [Bloodpool, Background, Myocardium, Normal_Liver, Normal_Lung]
+
+    path = os.path.dirname(__file__)
+    input_path = os.path.join(path, 'input')
+    output_path = os.path.join(path, 'output')
 
     if not os.path.exists(output_path):
         os.makedirs(output_path)
@@ -53,13 +54,17 @@ def main():
     d_z = axial_FOV / (zdim - 1)
 
     final_image_3D = np.zeros((xdim, ydim, zdim))
-    mu_map_3D = np.zeros((xdim, ydim, zdim))
     mu_map_slice = np.zeros((xdim, ydim))
 
     bin_size = transaxial_FOV / xdim
-    if mu_units == 1:
-        mu_map_3D = mu_map_3D * bin_size
 
+    if mu_units == '/mm':
+        mu_map_3D = mu_map_3D * bin_size
+    elif mu_units == '/cm':
+        mu_map_3D = mu_map_3D * bin_size / 10
+    elif mu_units != '/voxel':
+        raise ValueError("mu_units must be 'mm', 'cm', or '/voxel'")
+    
     ROIs_filepath = os.path.join(input_path, ROIs_filename)
     print('Generating Compartmental Images:')
     generate_graphics(values, ROIs_filepath, xdim, ydim, zdim, output_path)
@@ -76,7 +81,7 @@ def main():
         for z in tqdm(np.arange(zdim)):
             mu_map_slice = mu_map_3D[:, :, z]
             frame_object_slice = frame_object[:,:,z]
-            final_image_3D[:, :, z] = perform_reconstruction(frame_object_slice, mu_map_slice, ITERATIONS, SUBSETS, xdim, bin_size, voxel_size, d_z, ScanDuration, input_path)
+            final_image_3D[:, :, z] = perform_reconstruction(frame_object_slice, mu_map_slice, ITERATIONS, SUBSETS, xdim, bin_size, voxel_size, d_z, ScanDuration, input_path, output_path)
 
         finalized_image = nib.Nifti1Image(final_image_3D, affine=np.eye(4))
         filename = "{}_frame{}_recon_it{}_subset{}.nii".format(output_filename, frame+1, ITERATIONS, SUBSETS)

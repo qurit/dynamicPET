@@ -48,7 +48,8 @@ def generate_graphics(values, ROIs_filename, xdim, ydim, zdim, output_path):
 	plt.grid(False)
 	plt.title('FDG Values')
 	plt.legend(['Input Function'])
-	plt.show(block=False)
+	if plot_figures:
+		plt.show(block=False)
 
 	N_indices = len(values)
 	num_fits = N_indices
@@ -193,9 +194,9 @@ def generate_graphics(values, ROIs_filename, xdim, ydim, zdim, output_path):
 			ax.plot(t, C)
 
 		Legend = ['Myocardium','Blood','Background','Liver','Lung','Liver Tumor','Lung Tumor']
-		# Legend = ['Myocardium','Blood','Background','Liver','Lung']
 		plt.legend([Legend[index]])
-		plt.show(block=False)
+		if plot_figures:
+			plt.show(block=False)
 
 	K_image = np.zeros((xdim, ydim, zdim))
 	B_image = np.zeros((xdim, ydim, zdim))
