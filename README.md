@@ -1,13 +1,12 @@
-# README #
-
-## What is this repository for? ##
+# README
+## What is this repository for?
 
 * Quick summary
 	* A Python-based Dynamic multi-bed PET simulation and reconstruction framework with analytical modeling of system matrix, capable of incorporating various degrees of PSF modeling. 
 * Version
 	* 1.0.1.1
 
-## How do I get set up? ##
+## How do I get set up?
 * Necessary packages
 	* NiBabel (To read and write NIfTI files)
 	* scikit-image
@@ -15,7 +14,7 @@
 	* sklearn
 
 * Start-up
-	* To start the project you need to run the file **SimulateDynamicMulibedFDG.py**
+	* To start the project you need to run the file **SimulateDynamicMultibedFDG.py**
 
 * Configurations (config.json)
 	* You can change various parameters in the config file such as:
@@ -38,3 +37,12 @@
 
 
 This code was developed by Nolla Sherifi (*nolla.sherifi@tum.de*) between October 2023 and March 2024 at the Technical University of Munich.
+
+## Changes Implemented by James
+* Directory structure (cleaned up i/o)
+* Removed some input parameters (dimension automatically grabbed from image, etc)
+* Fixed bug in bins calculation (previously not working for image dimensions other than 128)
+* New input for mu map units ("/cm", "/mm", or "/voxel")
+* Added new full length xcat phantom
+* **SimulateDynamicMultibedFDG.py** is now main.py. Run this script to start simulation.
+* tqdm (progress bars) was added, so this is a newly required dependecy (or it can be removed fairly easily)
