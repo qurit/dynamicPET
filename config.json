@@ -1,13 +1,11 @@
 {
     "output_filename": "output_images",
-    "ROIs_filename": "full_xcat_regions_128x128x360.nii",
-    "mu_map_file": "full_xcat_atn_128x128x360.nii",
-    "frames": 6,
-    "transaxial_FOV": 600,
-    "axial_FOV": 150,
+    "ROIs_filename": "NCAT_128x128x47_0347x0347x0327_regions.nii",
+    "mu_map_file": "NCAT_128x128x47_0347x0347x0327_atn_invmm.nii",
+    "frames": 1,
     "ITERATIONS": 6,
     "SUBSETS": 5,
-    "ScanDuration": 3,
-    "VCT_sensitivity": 176000,
-    "mu_units": "/cm"
+    "ScanDuration": 10,
+    "mu_units": "/mm",
+    "scanner": "Discovery RX"
 }

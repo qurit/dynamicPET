@@ -11,7 +11,7 @@ from functions.GeneratePSFKernels import generate_PSF_kernels
 from functions.GenerateSensitivitySinogram import gen_sens_sino
 from functions.CalculateScalingFactor import scaling_factor
 
-def perform_reconstruction(image_input, atten_input, ITERATIONS, SUBSETS, xdim, bin_size, voxel_size, d_z, ScanDuration, input_path, output_path):
+def perform_reconstruction(image_input, atten_input, ITERATIONS, SUBSETS, xdim, bin_size, voxel_size, d_z, ScanDuration, input_path, output_path, scanner):
     PSF_Kernel = 1
 
     Num_Noise_Realz = 1
@@ -27,14 +27,12 @@ def perform_reconstruction(image_input, atten_input, ITERATIONS, SUBSETS, xdim, 
     IMAGE_DECAYED = 0
     HIGH_RES_TRUE = False
     LOAD_ATTENUATION = 1
-    LOAD_NORMALIZATION = 1
+    LOAD_NORMALIZATION = 0
 
     AOC_ind = 2
     AOC_unit = 1
 
-    # VCT_sensitivity = 7300 / 1e6  # 7.3 [cps/kBq] = cps/Mdps MBq->KBq; The number is 1700 for 2D, and 7300 for 3D for GE Discovery RX scanner.
-    # VCT_sensitivity = 13300 / 1e6  # 13.3 [cps/kBq] ==> GE Discovery MI (based online source results)
-    VCT_sensitivity = 176000 / 1e6  # 176 [cps/kBq] ==> Siemens Biograph Vision Quadra (based online source results)
+    VCT_sensitivity = scanner["VCT_sensitivity"] / 1e6
 
     image_true = image_input
     image_correction = 1.0
@@ -55,7 +53,7 @@ def perform_reconstruction(image_input, atten_input, ITERATIONS, SUBSETS, xdim, 
     theta_m = theta.reshape((round(len(theta)/SUBSETS), SUBSETS))
     angles_m = len(theta_m)
 
-    KernelFull_hold, KernelFull, KernelsSet_hold, KernelsSet, NUMVAR = generate_PSF_kernels(PSF_Kernel, xdim, SUBSETS, NUM_BINS, bin_size)
+    KernelFull_hold, KernelFull, KernelsSet_hold, KernelsSet, NUMVAR = generate_PSF_kernels(PSF_Kernel, xdim, SUBSETS, NUM_BINS, bin_size, scanner)
 
     TmrCount = 1
 
@@ -106,7 +104,7 @@ def perform_reconstruction(image_input, atten_input, ITERATIONS, SUBSETS, xdim, 
         if norm_original.shape[0] * norm_original.shape[1] != NUM_BINS * thdim:
             norm_original = st.resize(norm_original, (NUM_BINS, int(thdim)), order=1, preserve_range=True)
     else:
-        norm_original = np.ones((NUM_BINS, thdim))
+        norm_original = np.ones((NUM_BINS, int(thdim)))
 
     Y2, X2 = np.meshgrid(np.arange(1, 7), np.arange(1, 7))
     filter = 1

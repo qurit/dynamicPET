@@ -2,7 +2,7 @@ import ctypes
 import math
 import numpy as np
 
-def generate_PSF_kernels(PSF_Kernel, xdim, SUBSETS, NUM_BINS, bin_size):
+def generate_PSF_kernels(PSF_Kernel, xdim, SUBSETS, NUM_BINS, bin_size, scanner):
     if PSF_Kernel == 0:  # No PSF modeling
         Kernels2Select = [1]
     elif PSF_Kernel == 1:  # True PSF modeling
@@ -22,14 +22,14 @@ def generate_PSF_kernels(PSF_Kernel, xdim, SUBSETS, NUM_BINS, bin_size):
     mln = (np.arange(0, 5.1, 0.1)) * 0.4
     mu_set = create_mu_set(mln)
 
-    D = 886
+    D = scanner["ring_diameter"]
     r = D / 2
     np.random.seed()
 
     KernelsSet_hold = np.zeros((NUM_BINS, 15, NUMVAR))
     KernelsSet = np.zeros((NUM_BINS, NUM_BINS, NUMVAR))
 
-    if (NUM_BINS * bin_size) >= D:
+    if (xdim * bin_size) >= D: #replaced NUM_bins * bin_size
         ctypes.windll.user32.MessageBoxW(0, 'Object FOV hits the scanner!!', 'Warning!!!', 0)
 
     for nrv in range(NUMVAR):
