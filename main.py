@@ -6,6 +6,7 @@ from functions.MainPETSimulateReconstruct import perform_reconstruction
 from functions.FitReconstructedImages import fitImages
 import json
 import os
+from datetime import datetime
 from tqdm import tqdm
 
 
@@ -14,7 +15,10 @@ def main():
 
     path = os.path.dirname(__file__)
     input_path = os.path.join(path, 'input')
-    output_path = os.path.join(path, 'output')
+
+    now = datetime.now()
+    now_str = now.strftime("%Y-%m-%d %H:%M:%S")
+    output_path = os.path.join(path, 'output', now_str)
 
     if not os.path.exists(output_path):
         os.makedirs(output_path)
@@ -70,7 +74,7 @@ def main():
     
     ROIs_filepath = os.path.join(input_path, ROIs_filename)
     print('Generating Compartmental Images:')
-    # generate_graphics(values, ROIs_filepath, xdim, ydim, zdim, output_path)
+    generate_graphics(values, ROIs_filepath, xdim, ydim, zdim, output_path)
 
     for frame in np.arange(frames):
         print("Simulating and Reconstructing Frame ", frame+1, ":")
@@ -91,8 +95,14 @@ def main():
         filepath = os.path.join(output_path, filename)
         nib.save(finalized_image, filepath)
 
-    print("Fitting Reconstructed Images:")
+    # print("Fitting Reconstructed Images:")
     # fitImages(frames, xdim, ydim, zdim, ITERATIONS, SUBSETS, output_path)
+
+    #write log
+    with open('log.txt', 'w') as f:
+        f.write(f'{now_str}\n')
+        for key, value in config.items():
+            f.write(f'{key}: {value}\n')
 
     t1 = time.time()
     print("Time elapsed: ", t1 - t0)

@@ -27,7 +27,7 @@ def perform_reconstruction(image_input, atten_input, ITERATIONS, SUBSETS, xdim, 
     IMAGE_DECAYED = 0
     HIGH_RES_TRUE = False
     LOAD_ATTENUATION = 1
-    LOAD_NORMALIZATION = 0
+    LOAD_NORMALIZATION = 1
 
     AOC_ind = 2
     AOC_unit = 1

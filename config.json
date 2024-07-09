@@ -5,7 +5,7 @@
     "frames": 1,
     "ITERATIONS": 6,
     "SUBSETS": 5,
-    "ScanDuration": 10,
+    "ScanDuration": 3,
     "mu_units": "/mm",
-    "scanner": "Discovery RX"
+    "scanner": "Vision Pro Quadra"
 }
