@@ -1,8 +1,8 @@
 {
     "output_filename": "output_images",
-    "ROIs_filename": "NCAT_128x128x47_0347x0347x0327_regions.nii",
-    "mu_map_file": "NCAT_128x128x47_0347x0347x0327_atn_invmm.nii",
-    "frames": 1,
+    "ROIs_filename": "XCAT_256x256x40.nii",
+    "mu_map_file": "XCAT_256x256x40_atn.nii",
+    "frames": 6,
     "ITERATIONS": 6,
     "SUBSETS": 5,
     "ScanDuration": 3,

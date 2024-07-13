@@ -17,7 +17,7 @@ def main():
     input_path = os.path.join(path, 'input')
 
     now = datetime.now()
-    now_str = now.strftime("%Y-%m-%d %H:%M:%S")
+    now_str = now.strftime("%Y-%m-%d %H꞉%M꞉%S")
     output_path = os.path.join(path, 'output', now_str)
 
     if not os.path.exists(output_path):
@@ -95,11 +95,12 @@ def main():
         filepath = os.path.join(output_path, filename)
         nib.save(finalized_image, filepath)
 
-    # print("Fitting Reconstructed Images:")
-    # fitImages(frames, xdim, ydim, zdim, ITERATIONS, SUBSETS, output_path)
+    print("Fitting Reconstructed Images:")
+    fitImages(frames, xdim, ydim, zdim, ITERATIONS, SUBSETS, output_path)
 
     #write log
-    with open('log.txt', 'w') as f:
+    log_path = os.path.join(output_path, 'log.txt')
+    with open(log_path, 'w') as f:
         f.write(f'{now_str}\n')
         for key, value in config.items():
             f.write(f'{key}: {value}\n')
