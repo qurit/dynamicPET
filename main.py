@@ -7,11 +7,9 @@ from functions.FitReconstructedImages import fitImages
 import json
 import os
 from datetime import datetime
-from tqdm import tqdm
-from multiprocessing import Pool
 from tqdm.contrib.concurrent import process_map
 
-def multi_core_recon(args):
+def multicore_recon(args):
     return perform_reconstruction(*args)
 
 def main():
@@ -91,7 +89,7 @@ def main():
 
         num_cores = os.cpu_count()
         args = [(frame_object[:,:,z], mu_map_3D[:, :, z], ITERATIONS, SUBSETS, xdim, bin_size, voxel_size, d_z, ScanDuration, input_path, output_path, scanner) for z in np.arange(zdim)]
-        final_image_3D_slices = process_map(multi_core_recon, args, max_workers=num_cores)
+        final_image_3D_slices = process_map(multicore_recon, args, max_workers=num_cores)
 
         for z, img in enumerate(final_image_3D_slices):
             final_image_3D[:, :, z] = img
@@ -110,7 +108,7 @@ def main():
         f.write(f'{now_str}\n')
         for key, value in config.items():
             f.write(f'{key}: {value}\n')
-        f.write(f'Simulation time: {t1 - t0} seconds.\n')
+        f.write(f'Simulation time: {t1 - t0} seconds\n')
     print("Time elapsed: ", t1 - t0)
     print("FDG Simulation Successful")
 

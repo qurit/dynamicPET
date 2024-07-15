@@ -3,6 +3,35 @@ import nibabel as nib
 from sklearn.linear_model import LinearRegression
 import os
 from tqdm import tqdm
+from tqdm.contrib.concurrent import process_map
+
+def regression(xx, total_frames, ysize, zsize, image, sp_list, cp_list):
+	K = np.zeros((ysize, zsize))
+	B = np.zeros((ysize, zsize))
+	for yy in range(0, ysize):
+		for zz in range(0, zsize):
+			C = np.squeeze(image[xx, yy, zz, :])
+
+			y = C/cp_list
+			x = sp_list/cp_list
+
+			Ones = np.ones(total_frames)
+
+			X = np.zeros((6, 2))
+			for i in np.arange(0, total_frames):
+				X[i,:] = [x[i], Ones[i]]
+			
+			model = LinearRegression()
+			model.fit(X, y)
+			b = model.coef_
+
+			K[yy, zz] = b[0]
+			B[yy, zz] = b[1]
+
+	return K, B
+
+def multicore_regression(args):
+    return regression(*args)
 
 def fitImages(total_frames, xsize, ysize, zsize, ITERATIONS, SUBSETS, output_path):
 	sp_list_filename = os.path.join(output_path, 'sp_NP6.txt')
@@ -24,26 +53,16 @@ def fitImages(total_frames, xsize, ysize, zsize, ITERATIONS, SUBSETS, output_pat
 	K_image = np.zeros((xsize, ysize, zsize))
 	B_image = np.zeros((xsize, ysize, zsize))
 
-	for xx in tqdm(range(0, xsize)):
-		for yy in range(0, ysize):
-			for zz in range(0, zsize):
-				C = np.squeeze(image[xx, yy, zz, :])
+	num_cores = os.cpu_count()
+	args = [(xx, total_frames, ysize, zsize, image, sp_list, cp_list) for xx in range(0, xsize)]
+	results = process_map(multicore_regression, args, max_workers=num_cores)
+	K_image_slices, B_image_slices = zip(*results)
 
-				y = C/cp_list
-				x = sp_list/cp_list
+	for xx, img in enumerate(K_image_slices):
+		K_image[xx, :, :] = img
 
-				Ones = np.ones(total_frames)
-
-				X = np.zeros((6, 2))
-				for i in np.arange(0, total_frames):
-					X[i,:] = [x[i], Ones[i]]
-				
-				model = LinearRegression()
-				model.fit(X, y)
-				b = model.coef_
-
-				K_image[xx, yy, zz] = b[0]
-				B_image[xx, yy, zz] = b[1]
+	for xx, img in enumerate(B_image_slices):
+		B_image[xx, :, :] = img
 
 	finalized_K_image = nib.Nifti1Image(K_image, affine=np.eye(4))
 	finalized_B_image = nib.Nifti1Image(B_image, affine=np.eye(4))

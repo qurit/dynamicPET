@@ -22,7 +22,7 @@ def perform_reconstruction(image_input, atten_input, ITERATIONS, SUBSETS, xdim, 
     IMG_ABS_PRS = 0
     RECON_NF_NOISY = 1
 
-    RECONST_RM = 1
+    RECONST_RM = 1 #~50% slower
     SIMULATE_RM = 1
     IMAGE_DECAYED = 0
     HIGH_RES_TRUE = False
