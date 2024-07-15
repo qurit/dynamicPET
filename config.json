@@ -6,6 +6,6 @@
     "ITERATIONS": 6,
     "SUBSETS": 5,
     "ScanDuration": 3,
-    "mu_units": "/mm",
+    "mu_units": "/cm",
     "scanner": "Vision Pro Quadra"
 }

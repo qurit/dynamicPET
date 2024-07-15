@@ -8,7 +8,11 @@ import json
 import os
 from datetime import datetime
 from tqdm import tqdm
+from multiprocessing import Pool
+from tqdm.contrib.concurrent import process_map
 
+def multi_core_recon(args):
+    return perform_reconstruction(*args)
 
 def main():
     t0 = time.time()
@@ -77,7 +81,7 @@ def main():
     generate_graphics(values, ROIs_filepath, xdim, ydim, zdim, output_path)
 
     for frame in np.arange(frames):
-        print("Simulating and Reconstructing Frame ", frame+1, ":")
+        print("Simulating and Reconstructing Frame", frame+1, ":")
         frn = int(frame) + 1
         frame_name = 'input_images_frame' + str(frn) + '.nii'
         frame_path = os.path.join(output_path, frame_name)
@@ -85,10 +89,12 @@ def main():
         frame_object_slice = np.zeros((xdim, ydim))
         frame_object = nib.load(frame_path).get_fdata()
 
-        for z in tqdm(np.arange(zdim)):
-            mu_map_slice = mu_map_3D[:, :, z]
-            frame_object_slice = frame_object[:,:,z]
-            final_image_3D[:, :, z] = perform_reconstruction(frame_object_slice, mu_map_slice, ITERATIONS, SUBSETS, xdim, bin_size, voxel_size, d_z, ScanDuration, input_path, output_path, scanner)
+        num_cores = os.cpu_count()
+        args = [(frame_object[:,:,z], mu_map_3D[:, :, z], ITERATIONS, SUBSETS, xdim, bin_size, voxel_size, d_z, ScanDuration, input_path, output_path, scanner) for z in np.arange(zdim)]
+        final_image_3D_slices = process_map(multi_core_recon, args, max_workers=num_cores)
+
+        for z, img in enumerate(final_image_3D_slices):
+            final_image_3D[:, :, z] = img
 
         finalized_image = nib.Nifti1Image(final_image_3D, affine=np.eye(4))
         filename = "{}_frame{}_recon_it{}_subset{}.nii".format(output_filename, frame+1, ITERATIONS, SUBSETS)
@@ -98,14 +104,13 @@ def main():
     print("Fitting Reconstructed Images:")
     fitImages(frames, xdim, ydim, zdim, ITERATIONS, SUBSETS, output_path)
 
-    #write log
+    t1 = time.time()
     log_path = os.path.join(output_path, 'log.txt')
     with open(log_path, 'w') as f:
         f.write(f'{now_str}\n')
         for key, value in config.items():
             f.write(f'{key}: {value}\n')
-
-    t1 = time.time()
+        f.write(f'Simulation time: {t1 - t0} seconds.\n')
     print("Time elapsed: ", t1 - t0)
     print("FDG Simulation Successful")
 
