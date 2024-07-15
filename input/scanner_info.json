@@ -1,0 +1,20 @@
+{
+    "Discovery RX": {
+        "transaxial_FOV": 600,
+        "axial_FOV": 150,
+        "VCT_sensitivity": 7300,
+        "ring_diameter": 886
+    },
+    "Discovery MI": {
+        "transaxial_FOV": 600,
+        "axial_FOV": 150,
+        "VCT_sensitivity": 13300,
+        "ring_diameter": 886
+    },
+    "Vision Pro Quadra": {
+        "transaxial_FOV": 600,
+        "axial_FOV": 150,
+        "VCT_sensitivity": 176000,
+        "ring_diameter": 886
+    }
+}
