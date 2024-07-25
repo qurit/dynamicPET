@@ -7,32 +7,30 @@ import skimage.transform as st
 from scipy.signal import convolve2d
 from skimage.transform import radon, iradon
 from functions.CalculateCalibrationFactor import calib_factor
-from functions.GeneratePSFKernels import generate_PSF_kernels
 from functions.GenerateSensitivitySinogram import gen_sens_sino
 from functions.CalculateScalingFactor import scaling_factor
 
-def perform_reconstruction(image_input, atten_input, ITERATIONS, SUBSETS, xdim, bin_size, voxel_size, d_z, ScanDuration, input_path, output_path, scanner):
-    PSF_Kernel = 1
+def perform_reconstruction(image_input, atten_input, ITERATIONS, SUBSETS, xdim, bin_size, voxel_size, d_z, ScanDuration, input_path, output_path, config, scanner, NUM_BINS, KernelFull, KernelsSet, NUMVAR):
+    
+    # Simulation Flags
+    Num_Noise_Realz = config["Num_Noise_Realz"]
+    NOISE_REALZ_Mean_Recon_Img = config["NOISE_REALZ_Mean_Recon_Img"]
+    IMG_ABS_PRS = config["IMG_ABS_PRS"]
+    RECON_NF_NOISY = config["RECON_NF_NOISY"]
+    RECONST_RM = config["RECONST_RM"]
+    SIMULATE_RM = config["SIMULATE_RM"]
+    IMAGE_DECAYED = config["IMAGE_DECAYED"]
+    HIGH_RES_TRUE = config["HIGH_RES_TRUE"]
+    LOAD_ATTENUATION = config["LOAD_ATTENUATION"]
+    LOAD_NORMALIZATION = config["LOAD_NORMALIZATION"]
+    AOC_ind = config["AOC_ind"]
+    AOC_unit = config["AOC_unit"]
+    TOF = config["TOF"]
 
-    Num_Noise_Realz = 1
-    NOISE_REALZ_Mean_Recon_Img = 1
+    VCT_sensitivity = scanner["VCT_sensitivity"] / 1e6
 
     ydim = xdim
     input_xdim = xdim
-    IMG_ABS_PRS = 0
-    RECON_NF_NOISY = 1
-
-    RECONST_RM = 1 #~50% slower
-    SIMULATE_RM = 1
-    IMAGE_DECAYED = 0
-    HIGH_RES_TRUE = False
-    LOAD_ATTENUATION = 1
-    LOAD_NORMALIZATION = 1
-
-    AOC_ind = 2
-    AOC_unit = 1
-
-    VCT_sensitivity = scanner["VCT_sensitivity"] / 1e6
 
     image_true = image_input
     image_correction = 1.0
@@ -43,8 +41,6 @@ def perform_reconstruction(image_input, atten_input, ITERATIONS, SUBSETS, xdim, 
     if LOAD_ATTENUATION == 1:
         mu_map = atten_input
 
-    NUM_BINS = math.ceil(np.sqrt(2) * xdim)
-
     thdim = math.pi / 2 * NUM_BINS
     thdim = (np.floor(thdim / SUBSETS) + 1) * SUBSETS
     d_theta = 180 / thdim
@@ -52,8 +48,6 @@ def perform_reconstruction(image_input, atten_input, ITERATIONS, SUBSETS, xdim, 
     theta = np.arange(0, 180, d_theta)
     theta_m = theta.reshape((round(len(theta)/SUBSETS), SUBSETS))
     angles_m = len(theta_m)
-
-    KernelFull_hold, KernelFull, KernelsSet_hold, KernelsSet, NUMVAR = generate_PSF_kernels(PSF_Kernel, xdim, SUBSETS, NUM_BINS, bin_size, scanner)
 
     TmrCount = 1
 
@@ -117,6 +111,15 @@ def perform_reconstruction(image_input, atten_input, ITERATIONS, SUBSETS, xdim, 
     else:
         ABS_PRS = [1,2]
 
+    if TOF:
+        non_zero_area = np.count_nonzero(mu_map)*(bin_size*10**-3)**2
+        equivalent_diameter = np.sqrt(4*non_zero_area/np.pi)
+        TOF_factor = np.sqrt(2*equivalent_diameter/(scanner["TOF_resolution"]*10**-12)/299792458)
+        if TOF_factor < 1:
+            TOF_factor = 1
+    else:
+        TOF_factor = 1
+
     Recon_Img = np.zeros((xdim, xdim))
     MeanImg = np.zeros((xdim, ydim, ITERATIONS, NUMVAR))
 
@@ -143,7 +146,7 @@ def perform_reconstruction(image_input, atten_input, ITERATIONS, SUBSETS, xdim, 
             start_time = 60
             end_time = start_time + ScanDuration
             calibration_factor = calib_factor(xdim, ydim, VCT_sensitivity, theta_m, norm_image, NUM_BINS)
-            scale_factor = scaling_factor(AOC_unit, voxel_size/HiResScale/10, voxel_size/HiResScale/10, d_z/10, start_time, end_time, lambda_val, calibration_factor, IMAGE_DECAYED)
+            scale_factor = scaling_factor(AOC_unit, voxel_size/HiResScale/10, voxel_size/HiResScale/10, d_z/10, start_time, end_time, lambda_val, calibration_factor, IMAGE_DECAYED, TOF_factor)
 
             SIG_ABS = np.zeros((len(range(BkgndBox[0], BkgndBox[1] + 1)), len(range(BkgndBox[2], BkgndBox[3] + 1)), ITERATIONS, NOISE_REALZ_Mean_Recon_Img, NUMVAR), dtype=np.float32)
             SIG_ABS_NF = np.zeros((len(range(BkgndBox[0], BkgndBox[1] + 1)), len(range(BkgndBox[2], BkgndBox[3] + 1)), ITERATIONS, NOISE_REALZ_Mean_Recon_Img, NUMVAR), dtype=np.float32)

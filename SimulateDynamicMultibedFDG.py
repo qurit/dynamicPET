@@ -1,7 +1,9 @@
 import time
 import nibabel as nib
 import numpy as np
+import math
 from functions.GenerateCompartmentalImages import generate_graphics
+from functions.GeneratePSFKernels import generate_PSF_kernels
 from functions.MainPETSimulateReconstruct import perform_reconstruction
 from functions.FitReconstructedImages import fitImages
 import json
@@ -12,7 +14,7 @@ from tqdm.contrib.concurrent import process_map
 def multicore_recon(args):
     return perform_reconstruction(*args)
 
-def main():
+def main_simulate():
     t0 = time.time()
 
     path = os.path.dirname(__file__)
@@ -36,6 +38,7 @@ def main():
     SUBSETS = config["SUBSETS"]
     ScanDuration = config["ScanDuration"]
     mu_units = config["mu_units"]
+    PSF_Kernel = config["PSF_Kernel"]
 
     with open(os.path.join(input_path, 'scanner_info.json'), 'r') as f:
         scanner_info = json.load(f)
@@ -66,6 +69,7 @@ def main():
     mu_map_slice = np.zeros((xdim, ydim))
 
     bin_size = transaxial_FOV / xdim
+    NUM_BINS = math.ceil(np.sqrt(2) * xdim)
 
     if mu_units == '/mm':
         mu_map_3D = mu_map_3D * bin_size
@@ -78,6 +82,8 @@ def main():
     print('Generating Compartmental Images:')
     generate_graphics(values, ROIs_filepath, xdim, ydim, zdim, output_path)
 
+    KernelFull_hold, KernelFull, KernelsSet_hold, KernelsSet, NUMVAR = generate_PSF_kernels(PSF_Kernel, xdim, SUBSETS, NUM_BINS, bin_size, scanner)
+
     for frame in np.arange(frames):
         print("Simulating and Reconstructing Frame", frame+1, ":")
         frn = int(frame) + 1
@@ -88,7 +94,7 @@ def main():
         frame_object = nib.load(frame_path).get_fdata()
 
         num_cores = os.cpu_count()
-        args = [(frame_object[:,:,z], mu_map_3D[:, :, z], ITERATIONS, SUBSETS, xdim, bin_size, voxel_size, d_z, ScanDuration, input_path, output_path, scanner) for z in np.arange(zdim)]
+        args = [(frame_object[:,:,z], mu_map_3D[:, :, z], ITERATIONS, SUBSETS, xdim, bin_size, voxel_size, d_z, ScanDuration, input_path, output_path, config, scanner, NUM_BINS, KernelFull, KernelsSet, NUMVAR) for z in np.arange(zdim)]
         final_image_3D_slices = process_map(multicore_recon, args, max_workers=num_cores)
 
         for z, img in enumerate(final_image_3D_slices):
@@ -103,14 +109,19 @@ def main():
     fitImages(frames, xdim, ydim, zdim, ITERATIONS, SUBSETS, output_path)
 
     t1 = time.time()
+    elapsed_time = t1 - t0
+    hours, remainder = divmod(elapsed_time, 3600)
+    minutes, seconds = divmod(remainder, 60)
+
     log_path = os.path.join(output_path, 'log.txt')
     with open(log_path, 'w') as f:
         f.write(f'{now_str}\n')
         for key, value in config.items():
             f.write(f'{key}: {value}\n')
-        f.write(f'Simulation time: {t1 - t0} seconds\n')
-    print("Time elapsed: ", t1 - t0)
+        f.write("Time elapsed: {:02d}:{:02d}:{:02d}".format(int(hours), int(minutes), int(seconds)))
+
+    print("Time elapsed: {:02d}:{:02d}:{:02d}".format(int(hours), int(minutes), int(seconds)))
     print("FDG Simulation Successful")
 
 if __name__ == "__main__":
-    main()
+    main_simulate()

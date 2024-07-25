@@ -2,10 +2,25 @@
     "output_filename": "output_images",
     "ROIs_filename": "XCAT_128x128x40.nii",
     "mu_map_file": "XCAT_128x128x40_atn.nii",
-    "frames": 6,
-    "ITERATIONS": 6,
+    "frames": 1,
+    "ITERATIONS": 4,
     "SUBSETS": 5,
     "ScanDuration": 3,
     "mu_units": "/cm",
-    "scanner": "Vision Pro Quadra"
+    "scanner": "Vision Pro Quadra",
+
+    "PSF_Kernel": 1,
+    "Num_Noise_Realz" : 1,
+    "NOISE_REALZ_Mean_Recon_Img" : 1,
+    "IMG_ABS_PRS" : 0,
+    "RECON_NF_NOISY" : 1,
+    "RECONST_RM" : 1,
+    "SIMULATE_RM" : 1,
+    "IMAGE_DECAYED" : 0,
+    "HIGH_RES_TRUE" : 0,
+    "LOAD_ATTENUATION" : 1,
+    "LOAD_NORMALIZATION" : 1,
+    "TOF" : 1,
+    "AOC_ind" : 2,
+    "AOC_unit" : 1
 }

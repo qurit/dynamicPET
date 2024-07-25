@@ -46,3 +46,4 @@ This code was developed by Nolla Sherifi (*nolla.sherifi@tum.de*) between Octobe
 * Added new full length xcat phantom
 * **SimulateDynamicMultibedFDG.py** is now main.py. Run this script to start simulation.
 * tqdm (progress bars) was added, so this is a newly required dependecy (or it can be removed fairly easily)
+* Implemented multicore processing
