@@ -148,10 +148,11 @@ def perform_reconstruction(image_input, atten_input, ITERATIONS, SUBSETS, xdim, 
             calibration_factor = calib_factor(xdim, ydim, VCT_sensitivity, theta_m, norm_image, NUM_BINS)
             scale_factor = scaling_factor(AOC_unit, voxel_size/HiResScale/10, voxel_size/HiResScale/10, d_z/10, start_time, end_time, lambda_val, calibration_factor, IMAGE_DECAYED, TOF_factor)
 
-            SIG_ABS = np.zeros((len(range(BkgndBox[0], BkgndBox[1] + 1)), len(range(BkgndBox[2], BkgndBox[3] + 1)), ITERATIONS, NOISE_REALZ_Mean_Recon_Img, NUMVAR), dtype=np.float32)
-            SIG_ABS_NF = np.zeros((len(range(BkgndBox[0], BkgndBox[1] + 1)), len(range(BkgndBox[2], BkgndBox[3] + 1)), ITERATIONS, NOISE_REALZ_Mean_Recon_Img, NUMVAR), dtype=np.float32)
-            SIG_PRS = np.zeros((len(range(BkgndBox[0], BkgndBox[1] + 1)), len(range(BkgndBox[2], BkgndBox[3] + 1)), ITERATIONS, NOISE_REALZ_Mean_Recon_Img, NUMVAR), dtype=np.float32)
-            SIG_PRS_NF = np.zeros((len(range(BkgndBox[0], BkgndBox[1] + 1)), len(range(BkgndBox[2], BkgndBox[3] + 1)), ITERATIONS, NOISE_REALZ_Mean_Recon_Img, NUMVAR), dtype=np.float32)
+# See comment at end re: signal absent/present
+            # SIG_ABS = np.zeros((len(range(BkgndBox[0], BkgndBox[1] + 1)), len(range(BkgndBox[2], BkgndBox[3] + 1)), ITERATIONS, NOISE_REALZ_Mean_Recon_Img, NUMVAR), dtype=np.float32)
+            # SIG_ABS_NF = np.zeros((len(range(BkgndBox[0], BkgndBox[1] + 1)), len(range(BkgndBox[2], BkgndBox[3] + 1)), ITERATIONS, NOISE_REALZ_Mean_Recon_Img, NUMVAR), dtype=np.float32)
+            # SIG_PRS = np.zeros((len(range(BkgndBox[0], BkgndBox[1] + 1)), len(range(BkgndBox[2], BkgndBox[3] + 1)), ITERATIONS, NOISE_REALZ_Mean_Recon_Img, NUMVAR), dtype=np.float32)
+            # SIG_PRS_NF = np.zeros((len(range(BkgndBox[0], BkgndBox[1] + 1)), len(range(BkgndBox[2], BkgndBox[3] + 1)), ITERATIONS, NOISE_REALZ_Mean_Recon_Img, NUMVAR), dtype=np.float32)
 
             if SIMULATE_RM:
                 image_true2 = convolve2d(true_image_data, filter_tr, mode='same')
@@ -257,63 +258,65 @@ def perform_reconstruction(image_input, atten_input, ITERATIONS, SUBSETS, xdim, 
                                 image_new[np.isnan(image_new)] = 0
                                 image_old = image_new
 
-                            if noisy == 2:
-                                if sig == 1:
-                                    if SIG_ABS.shape == 2:
-                                        SIG_ABS[:,:] = image_new[BkgndBox[0]:BkgndBox[1],BkgndBox[2]:BkgndBox[3]]
-                                    if SIG_ABS.shape == 3:
-                                        SIG_ABS[:,:,iter] = image_new[BkgndBox[0]:BkgndBox[1],BkgndBox[2]:BkgndBox[3]]
-                                    if SIG_ABS.shape == 4:
-                                        SIG_ABS[:,:,iter,tmpRealz] = image_new[BkgndBox[0]:BkgndBox[1],BkgndBox[2]:BkgndBox[3]]
-                                    if SIG_ABS.shape == 5:
-                                        SIG_ABS[:,:,iter,tmpRealz,nrv] = image_new[BkgndBox[0]:BkgndBox[1],BkgndBox[2]:BkgndBox[3]]
-                                elif sig == 2:
-                                    if SIG_PRS.shape == 2:
-                                        SIG_PRS[:,:] = image_new[BkgndBox[0]:BkgndBox[1],BkgndBox[2]:BkgndBox[3]]
-                                    if SIG_PRS.shape == 3:
-                                        SIG_PRS[:,:,iter] = image_new[BkgndBox[0]:BkgndBox[1],BkgndBox[2]:BkgndBox[3]]
-                                    if SIG_PRS.shape == 4:
-                                        SIG_PRS[:,:,iter,tmpRealz] = image_new[BkgndBox[0]:BkgndBox[1],BkgndBox[2]:BkgndBox[3]]
-                                    if SIG_PRS.shape == 5:
-                                        SIG_PRS[:,:,iter,tmpRealz,nrv] = image_new[BkgndBox[0]:BkgndBox[1],BkgndBox[2]:BkgndBox[3]]
-                            else:
-                                if sig == 1:
-                                    if SIG_ABS_NF.shape == 2:
-                                        SIG_ABS_NF[:,:] = image_new[BkgndBox[0]:BkgndBox[1],BkgndBox[2]:BkgndBox[3]]
-                                    if SIG_ABS_NF.shape == 3:
-                                        SIG_ABS_NF[:,:,iter] = image_new[BkgndBox[0]:BkgndBox[1],BkgndBox[2]:BkgndBox[3]]
-                                    if SIG_ABS_NF.shape == 4:
-                                        SIG_ABS_NF[:,:,iter,tmpRealz] = image_new[BkgndBox[0]:BkgndBox[1],BkgndBox[2]:BkgndBox[3]]
-                                    if SIG_ABS_NF.shape == 5:
-                                        SIG_ABS_NF[:,:,iter,tmpRealz,nrv] = image_new[BkgndBox[0]:BkgndBox[1],BkgndBox[2]:BkgndBox[3]]
-                                elif sig == 2:
-                                    if SIG_PRS_NF.shape == 2:
-                                        SIG_PRS_NF[:,:] = image_new[BkgndBox[0]:BkgndBox[1],BkgndBox[2]:BkgndBox[3]]
-                                    if SIG_PRS_NF.shape == 3:
-                                        SIG_PRS_NF[:,:,iter] = image_new[BkgndBox[0]:BkgndBox[1],BkgndBox[2]:BkgndBox[3]]
-                                    if SIG_PRS_NF.shape == 4:
-                                        SIG_PRS_NF[:,:,iter,tmpRealz] = image_new[BkgndBox[0]:BkgndBox[1],BkgndBox[2]:BkgndBox[3]]
-                                    if SIG_PRS_NF.shape == 5:
-                                        SIG_PRS_NF[:,:,iter,tmpRealz,nrv] = image_new[BkgndBox[0]:BkgndBox[1],BkgndBox[2]:BkgndBox[3]]
+# Related to signal absent/present. Saves image of only tumor, and only bakcground. Not relevenat for dynamic 3D imaging?
+                            # if noisy == 2:
+                            #     if sig == 1:
+                            #         if SIG_ABS.shape == 2:
+                            #             SIG_ABS[:,:] = image_new[BkgndBox[0]:BkgndBox[1],BkgndBox[2]:BkgndBox[3]]
+                            #         if SIG_ABS.shape == 3:
+                            #             SIG_ABS[:,:,iter] = image_new[BkgndBox[0]:BkgndBox[1],BkgndBox[2]:BkgndBox[3]]
+                            #         if SIG_ABS.shape == 4:
+                            #             SIG_ABS[:,:,iter,tmpRealz] = image_new[BkgndBox[0]:BkgndBox[1],BkgndBox[2]:BkgndBox[3]]
+                            #         if SIG_ABS.shape == 5:
+                            #             SIG_ABS[:,:,iter,tmpRealz,nrv] = image_new[BkgndBox[0]:BkgndBox[1],BkgndBox[2]:BkgndBox[3]]
+                            #     elif sig == 2:
+                            #         if SIG_PRS.shape == 2:
+                            #             SIG_PRS[:,:] = image_new[BkgndBox[0]:BkgndBox[1],BkgndBox[2]:BkgndBox[3]]
+                            #         if SIG_PRS.shape == 3:
+                            #             SIG_PRS[:,:,iter] = image_new[BkgndBox[0]:BkgndBox[1],BkgndBox[2]:BkgndBox[3]]
+                            #         if SIG_PRS.shape == 4:
+                            #             SIG_PRS[:,:,iter,tmpRealz] = image_new[BkgndBox[0]:BkgndBox[1],BkgndBox[2]:BkgndBox[3]]
+                            #         if SIG_PRS.shape == 5:
+                            #             SIG_PRS[:,:,iter,tmpRealz,nrv] = image_new[BkgndBox[0]:BkgndBox[1],BkgndBox[2]:BkgndBox[3]]
+                            # else:
+                            #     if sig == 1:
+                            #         if SIG_ABS_NF.shape == 2:
+                            #             SIG_ABS_NF[:,:] = image_new[BkgndBox[0]:BkgndBox[1],BkgndBox[2]:BkgndBox[3]]
+                            #         if SIG_ABS_NF.shape == 3:
+                            #             SIG_ABS_NF[:,:,iter] = image_new[BkgndBox[0]:BkgndBox[1],BkgndBox[2]:BkgndBox[3]]
+                            #         if SIG_ABS_NF.shape == 4:
+                            #             SIG_ABS_NF[:,:,iter,tmpRealz] = image_new[BkgndBox[0]:BkgndBox[1],BkgndBox[2]:BkgndBox[3]]
+                            #         if SIG_ABS_NF.shape == 5:
+                            #             SIG_ABS_NF[:,:,iter,tmpRealz,nrv] = image_new[BkgndBox[0]:BkgndBox[1],BkgndBox[2]:BkgndBox[3]]
+                            #     elif sig == 2:
+                            #         if SIG_PRS_NF.shape == 2:
+                            #             SIG_PRS_NF[:,:] = image_new[BkgndBox[0]:BkgndBox[1],BkgndBox[2]:BkgndBox[3]]
+                            #         if SIG_PRS_NF.shape == 3:
+                            #             SIG_PRS_NF[:,:,iter] = image_new[BkgndBox[0]:BkgndBox[1],BkgndBox[2]:BkgndBox[3]]
+                            #         if SIG_PRS_NF.shape == 4:
+                            #             SIG_PRS_NF[:,:,iter,tmpRealz] = image_new[BkgndBox[0]:BkgndBox[1],BkgndBox[2]:BkgndBox[3]]
+                            #         if SIG_PRS_NF.shape == 5:
+                            #             SIG_PRS_NF[:,:,iter,tmpRealz,nrv] = image_new[BkgndBox[0]:BkgndBox[1],BkgndBox[2]:BkgndBox[3]]
 
                             MeanImg[:,:,iter,nrv] = MeanImg[:,:,iter,nrv] + image_new
 
-                if noisy == 2:
-                    if sig == 1:
-                        Mean_SIG_ABS = MeanImg/NOISE_REALZ_Mean_Recon_Img
-                    elif sig == 2:
-                        Mean_SIG_PRS = MeanImg/NOISE_REALZ_Mean_Recon_Img
-                elif noisy == 1:
-                    if sig == 1:
-                        Mean_SIG_ABS = MeanImg/NOISE_REALZ_Mean_Recon_Img
-                        filename = 'SIG_ABS_NF__' + str(xdim) + '_R' + str(NOISE_REALZ_Mean_Recon_Img) + '_I' + str(ITERATIONS) + '_S' + str(SUBSETS) + '_K' + str(NUMVAR) + '_Tmr' + str(TmrCount) + '.nii'
-                        final_image = nib.Nifti1Image(Mean_SIG_ABS, affine=np.eye(4))
-                        nib.save(final_image, os.path.join(output_path, filename))
-                    elif sig == 2:
-                        Mean_SIG_PRS = MeanImg/NOISE_REALZ_Mean_Recon_Img
-                        filename = 'SIG_PRS_NF__' + str(xdim) + '_R' + str(NOISE_REALZ_Mean_Recon_Img) + '_I' + str(ITERATIONS) + '_S' + str(SUBSETS) + '_K' + str(NUMVAR) + '_Tmr' + str(TmrCount) + '.nii'
-                        final_image = nib.Nifti1Image(Mean_SIG_PRS, affine=np.eye(4))
-                        nib.save(final_image, os.path.join(output_path, filename))
+# Same as above
+                # if noisy == 2:
+                #     if sig == 1:
+                #         Mean_SIG_ABS = MeanImg/NOISE_REALZ_Mean_Recon_Img
+                #     elif sig == 2:
+                #         Mean_SIG_PRS = MeanImg/NOISE_REALZ_Mean_Recon_Img
+                # elif noisy == 1:
+                #     if sig == 1:
+                #         Mean_SIG_ABS = MeanImg/NOISE_REALZ_Mean_Recon_Img
+                #         filename = 'SIG_ABS_NF__' + str(xdim) + '_R' + str(NOISE_REALZ_Mean_Recon_Img) + '_I' + str(ITERATIONS) + '_S' + str(SUBSETS) + '_K' + str(NUMVAR) + '_Tmr' + str(TmrCount) + '.nii'
+                #         final_image = nib.Nifti1Image(Mean_SIG_ABS, affine=np.eye(4))
+                #         nib.save(final_image, os.path.join(output_path, filename))
+                #     elif sig == 2:
+                #         Mean_SIG_PRS = MeanImg/NOISE_REALZ_Mean_Recon_Img
+                #         filename = 'SIG_PRS_NF__' + str(xdim) + '_R' + str(NOISE_REALZ_Mean_Recon_Img) + '_I' + str(ITERATIONS) + '_S' + str(SUBSETS) + '_K' + str(NUMVAR) + '_Tmr' + str(TmrCount) + '.nii'
+                #         final_image = nib.Nifti1Image(Mean_SIG_PRS, affine=np.eye(4))
+                #         nib.save(final_image, os.path.join(output_path, filename))
 
         Recon_Img[:, :] = MeanImg[:,:,ITERATIONS-1, 0]/NOISE_REALZ_Mean_Recon_Img
 

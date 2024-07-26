@@ -9,13 +9,14 @@
         "transaxial_FOV": 600,
         "axial_FOV": 150,
         "VCT_sensitivity": 13300,
-        "ring_diameter": 886
+        "ring_diameter": 886,
+        "TOF_resolution": 382
     },
     "Vision Pro Quadra": {
-        "transaxial_FOV": 600,
+        "transaxial_FOV": 700,
         "axial_FOV": 106,
         "VCT_sensitivity": 176000,
-        "ring_diameter": 886,
+        "ring_diameter": 820,
         "TOF_resolution": 228
     }
 }

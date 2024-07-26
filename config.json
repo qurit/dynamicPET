@@ -19,7 +19,7 @@
     "IMAGE_DECAYED" : 0,
     "HIGH_RES_TRUE" : 0,
     "LOAD_ATTENUATION" : 1,
-    "LOAD_NORMALIZATION" : 1,
+    "LOAD_NORMALIZATION" : 0,
     "TOF" : 1,
     "AOC_ind" : 2,
     "AOC_unit" : 1

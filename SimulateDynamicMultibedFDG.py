@@ -122,6 +122,7 @@ def main_simulate():
 
     print("Time elapsed: {:02d}:{:02d}:{:02d}".format(int(hours), int(minutes), int(seconds)))
     print("FDG Simulation Successful")
+    return
 
 if __name__ == "__main__":
     main_simulate()

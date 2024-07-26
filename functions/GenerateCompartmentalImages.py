@@ -1,4 +1,6 @@
 import math
+import matplotlib
+matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 import nibabel as nib
 import numpy as np
@@ -44,11 +46,12 @@ def generate_graphics(values, ROIs_filename, xdim, ydim, zdim, output_path):
 	Cp_value = [number * 1000 for number in Cp_value]
 	color = 'red'
 	thickness = 3
-	plt.plot(t_mid, Cp_value, color=color, linewidth=thickness) #
-	plt.grid(False)
-	plt.title('FDG Values')
-	plt.legend(['Input Function'])
+
 	if plot_figures:
+		plt.plot(t_mid, Cp_value, color=color, linewidth=thickness) #
+		plt.grid(False)
+		plt.title('FDG Values')
+		plt.legend(['Input Function'])
 		plt.show(block=False)
 
 	N_indices = len(values)
@@ -176,26 +179,26 @@ def generate_graphics(values, ROIs_filename, xdim, ydim, zdim, output_path):
 		list_slope[index] = b[0][0]
 		list_intercept[index] = b[0][1]
 
-		fig, ax = plt.subplots(1)
-		ax.set_xlabel('t')
-		ax.set_ylabel('C')
-
-		ax.plot(t, C, linewidth=4, markeredgecolor='k', markersize=12)
-
-		plot_style = plot_shape0[index] + plot_shape1[index] + plot_shape2[index]
-
-		if 'o' in plot_style:
-			ax.plot(t, C, marker='o')
-		elif '+' in plot_style:
-			ax.plot(t, C, marker='+')
-		elif '^' in plot_style:
-			ax.plot(t, C, marker='^')
-		else:
-			ax.plot(t, C)
-
-		Legend = ['Myocardium','Blood','Background','Liver','Lung','Liver Tumor','Lung Tumor']
-		plt.legend([Legend[index]])
 		if plot_figures:
+			fig, ax = plt.subplots(1)
+			ax.set_xlabel('t')
+			ax.set_ylabel('C')
+
+			ax.plot(t, C, linewidth=4, markeredgecolor='k', markersize=12)
+
+			plot_style = plot_shape0[index] + plot_shape1[index] + plot_shape2[index]
+
+			if 'o' in plot_style:
+				ax.plot(t, C, marker='o')
+			elif '+' in plot_style:
+				ax.plot(t, C, marker='+')
+			elif '^' in plot_style:
+				ax.plot(t, C, marker='^')
+			else:
+				ax.plot(t, C)
+
+			Legend = ['Myocardium','Blood','Background','Liver','Lung','Liver Tumor','Lung Tumor']
+			plt.legend([Legend[index]])
 			plt.show(block=False)
 
 	K_image = np.zeros((xdim, ydim, zdim))
