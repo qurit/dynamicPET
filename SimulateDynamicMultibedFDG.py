@@ -39,6 +39,7 @@ def main_simulate():
     ScanDuration = config["ScanDuration"]
     mu_units = config["mu_units"]
     PSF_Kernel = config["PSF_Kernel"]
+    kinetic_parameters_filename = config["kinetic_parameters_filename"]
 
     with open(os.path.join(input_path, 'scanner_info.json'), 'r') as f:
         scanner_info = json.load(f)
@@ -46,16 +47,10 @@ def main_simulate():
 
     transaxial_FOV = scanner["transaxial_FOV"]
     axial_FOV = scanner["axial_FOV"]
-
-    Background = [0.1, 1, 0, 0, 0.03]
-    Bloodpool = [0, 1, 1, 1, 1]
-    Myocardium = [0.6, 1.2, 0.1, 0.001, 0.05]
-    Normal_Liver = [0.864, 0.981, 0.005, 0.016, 0]
-    Normal_Lung = [0.108, 0.735, 0.016, 0.013, 0.017]
-    Tumors_in_liver = [0.243, 0.78, 0.1, 0, 0]
-    Tumors_in_lung = [0.044, 0.231, 1.149, 0.259, 0]
-    values = [Background, Bloodpool, Myocardium, Normal_Liver, Normal_Lung, Tumors_in_liver, Tumors_in_lung]
     
+    with open(os.path.join(input_path, kinetic_parameters_filename), 'r') as file:
+        parameters = json.load(file)
+    kinetic_parameters = [value for key, value in parameters.items()]
 
     mu_map_filepath = os.path.join(input_path, mu_map_file)
     mu_map_3D = nib.load(mu_map_filepath).get_fdata()
@@ -66,7 +61,6 @@ def main_simulate():
     d_z = axial_FOV / (zdim - 1)
 
     final_image_3D = np.zeros((xdim, ydim, zdim))
-    mu_map_slice = np.zeros((xdim, ydim))
 
     bin_size = transaxial_FOV / xdim
     NUM_BINS = math.ceil(np.sqrt(2) * xdim)
@@ -80,7 +74,7 @@ def main_simulate():
     
     ROIs_filepath = os.path.join(input_path, ROIs_filename)
     print('Generating Compartmental Images:')
-    generate_graphics(values, ROIs_filepath, xdim, ydim, zdim, output_path)
+    generate_graphics(kinetic_parameters, ROIs_filepath, xdim, ydim, zdim, output_path)
 
     KernelFull_hold, KernelFull, KernelsSet_hold, KernelsSet, NUMVAR = generate_PSF_kernels(PSF_Kernel, xdim, SUBSETS, NUM_BINS, bin_size, scanner)
 

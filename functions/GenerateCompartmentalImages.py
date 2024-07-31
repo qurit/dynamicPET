@@ -10,7 +10,7 @@ from sklearn.linear_model import LinearRegression
 import os
 from tqdm import tqdm
 
-def generate_graphics(values, ROIs_filename, xdim, ydim, zdim, output_path):
+def generate_graphics(kinetic_parameters, ROIs_filename, xdim, ydim, zdim, output_path):
 	sp_list_filename = os.path.join(output_path, 'sp_NP6.txt')
 	cp_list_filename = os.path.join(output_path, 'cp_NP6.txt')
 
@@ -54,7 +54,7 @@ def generate_graphics(values, ROIs_filename, xdim, ydim, zdim, output_path):
 		plt.legend(['Input Function'])
 		plt.show(block=False)
 
-	N_indices = len(values)
+	N_indices = len(kinetic_parameters)
 	num_fits = N_indices
 
 	list_intercept = np.zeros(N_indices)[:, np.newaxis]
@@ -69,7 +69,7 @@ def generate_graphics(values, ROIs_filename, xdim, ydim, zdim, output_path):
 	k4_list = [0] * 7
 	Vp_list = [0] * 7
 	i = 0
-	for array in values:
+	for array in kinetic_parameters:
 		K1_list[i] = (array[0])
 		k2_list[i] = (array[1])
 		k3_list[i] = (array[2])
