@@ -10,6 +10,7 @@ import json
 import os
 from datetime import datetime
 from tqdm.contrib.concurrent import process_map
+from nilearn.image import smooth_img
 
 def multicore_recon(args):
     return perform_reconstruction(*args)
@@ -36,10 +37,13 @@ def main_simulate():
     frames = config["frames"]
     ITERATIONS = config["ITERATIONS"]
     SUBSETS = config["SUBSETS"]
-    ScanDuration = config["ScanDuration"]
+    frame_durations = config["frame_durations"]
     mu_units = config["mu_units"]
-    PSF_Kernel = config["PSF_Kernel"]
     kinetic_parameters_filename = config["kinetic_parameters_filename"]
+    smoothing_kernel_fwhm = config["smoothing_kernel_fwhm"]
+    
+    PSF_Kernel = config["PSF_Kernel"]
+    SMOOTHING = config["SMOOTHING"]
 
     with open(os.path.join(input_path, 'scanner_info.json'), 'r') as f:
         scanner_info = json.load(f)
@@ -88,7 +92,7 @@ def main_simulate():
         frame_object = nib.load(frame_path).get_fdata()
 
         num_cores = os.cpu_count()
-        args = [(frame_object[:,:,z], mu_map_3D[:, :, z], ITERATIONS, SUBSETS, xdim, bin_size, voxel_size, d_z, ScanDuration, input_path, output_path, config, scanner, NUM_BINS, KernelFull, KernelsSet, NUMVAR) for z in np.arange(zdim)]
+        args = [(frame_object[:,:,z], mu_map_3D[:, :, z], ITERATIONS, SUBSETS, xdim, bin_size, voxel_size, d_z, frame_durations[int(frame)], input_path, output_path, config, scanner, NUM_BINS, KernelFull, KernelsSet, NUMVAR) for z in np.arange(zdim)]
         final_image_3D_slices = process_map(multicore_recon, args, max_workers=num_cores)
 
         for z, img in enumerate(final_image_3D_slices):
@@ -98,6 +102,12 @@ def main_simulate():
         filename = "{}_frame{}_recon_it{}_subset{}.nii".format(output_filename, frame+1, ITERATIONS, SUBSETS)
         filepath = os.path.join(output_path, filename)
         nib.save(finalized_image, filepath)
+        
+        if SMOOTHING:
+            smooth_image = smooth_img(finalized_image, smoothing_kernel_fwhm)
+            filename = "{}_frame{}_recon_it{}_subset{}_smooth.nii".format(output_filename, frame+1, ITERATIONS, SUBSETS)
+            filepath = os.path.join(output_path, filename)
+            nib.save(smooth_image, filepath)
 
     print("Fitting Reconstructed Images:")
     fitImages(frames, xdim, ydim, zdim, ITERATIONS, SUBSETS, output_path)

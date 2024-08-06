@@ -63,11 +63,11 @@ def generate_graphics(kinetic_parameters, ROIs_filename, xdim, ydim, zdim, outpu
 	list_K = np.zeros(N_indices)[:, np.newaxis]
 	list_C = np.zeros((N_frames, N_indices))
 
-	K1_list = [0] * 7
-	k2_list = [0] * 7
-	k3_list = [0] * 7
-	k4_list = [0] * 7
-	Vp_list = [0] * 7
+	K1_list = [0] * N_indices
+	k2_list = [0] * N_indices
+	k3_list = [0] * N_indices
+	k4_list = [0] * N_indices
+	Vp_list = [0] * N_indices
 	i = 0
 	for array in kinetic_parameters:
 		K1_list[i] = (array[0])
@@ -245,3 +245,5 @@ def generate_graphics(kinetic_parameters, ROIs_filename, xdim, ydim, zdim, outpu
 	BImageFilename = 'standard_fit_B_image.nii'
 	BImageFilepath = os.path.join(output_path, BImageFilename)
 	nib.save(finalizedBImage, BImageFilepath)
+
+	return

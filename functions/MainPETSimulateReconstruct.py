@@ -28,6 +28,7 @@ def perform_reconstruction(image_input, atten_input, ITERATIONS, SUBSETS, xdim, 
     TOF = config["TOF"]
 
     VCT_sensitivity = scanner["VCT_sensitivity"] / 1e6
+    start_time = config["start_time"]
 
     ydim = xdim
     input_xdim = xdim
@@ -143,7 +144,6 @@ def perform_reconstruction(image_input, atten_input, ITERATIONS, SUBSETS, xdim, 
             sensit_image_all = gen_sens_sino(KernelsSet, atten, norm_image, NUMVAR, SUBSETS, RECONST_RM, theta_m, xdim, ydim, filter_tr, iRadonInterp)
 
             lambda_val = 0.0063
-            start_time = 60
             end_time = start_time + ScanDuration
             calibration_factor = calib_factor(xdim, ydim, VCT_sensitivity, theta_m, norm_image, NUM_BINS)
             scale_factor = scaling_factor(AOC_unit, voxel_size/HiResScale/10, voxel_size/HiResScale/10, d_z/10, start_time, end_time, lambda_val, calibration_factor, IMAGE_DECAYED, TOF_factor)
