@@ -37,7 +37,7 @@ def main_simulate():
     frames = config["frames"]
     ITERATIONS = config["ITERATIONS"]
     SUBSETS = config["SUBSETS"]
-    frame_durations = config["frame_durations"]
+    frame_durations = [frame/60 for frame in config["frame_durations"]]
     mu_units = config["mu_units"]
     kinetic_parameters_filename = config["kinetic_parameters_filename"]
     smoothing_kernel_fwhm = config["smoothing_kernel_fwhm"]
