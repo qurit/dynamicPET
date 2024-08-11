@@ -1,7 +1,7 @@
 import numpy as np
 
 
-def scaling_factor(BqDim_ind, d_x, d_y, d_z, t1, t2, lambda_val, calibration_factor, IMAGE_DECAYED):
+def scaling_factor(BqDim_ind, d_x, d_y, d_z, t1, t2, lambda_val, calibration_factor, IMAGE_DECAYED, TOF_factor):
     # Bq unit correction
     if BqDim_ind == 1:
         ratio = 1
@@ -24,6 +24,6 @@ def scaling_factor(BqDim_ind, d_x, d_y, d_z, t1, t2, lambda_val, calibration_fac
         decay_factor = 1
 
     # Scaling factor calculation
-    scale_factor = ratio * vol * (60 * delta_t) * decay_factor * calibration_factor
+    scale_factor = ratio * vol * (60 * delta_t) * decay_factor * calibration_factor * TOF_factor
 
     return scale_factor

@@ -1,4 +1,6 @@
 import math
+import matplotlib
+matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 import nibabel as nib
 import numpy as np
@@ -8,7 +10,7 @@ from sklearn.linear_model import LinearRegression
 import os
 from tqdm import tqdm
 
-def generate_graphics(values, ROIs_filename, xdim, ydim, zdim, output_path):
+def generate_graphics(kinetic_parameters, ROIs_filename, xdim, ydim, zdim, output_path):
 	sp_list_filename = os.path.join(output_path, 'sp_NP6.txt')
 	cp_list_filename = os.path.join(output_path, 'cp_NP6.txt')
 
@@ -44,14 +46,15 @@ def generate_graphics(values, ROIs_filename, xdim, ydim, zdim, output_path):
 	Cp_value = [number * 1000 for number in Cp_value]
 	color = 'red'
 	thickness = 3
-	plt.plot(t_mid, Cp_value, color=color, linewidth=thickness) #
-	plt.grid(False)
-	plt.title('FDG Values')
-	plt.legend(['Input Function'])
+
 	if plot_figures:
+		plt.plot(t_mid, Cp_value, color=color, linewidth=thickness) #
+		plt.grid(False)
+		plt.title('FDG Values')
+		plt.legend(['Input Function'])
 		plt.show(block=False)
 
-	N_indices = len(values)
+	N_indices = len(kinetic_parameters)
 	num_fits = N_indices
 
 	list_intercept = np.zeros(N_indices)[:, np.newaxis]
@@ -60,13 +63,13 @@ def generate_graphics(values, ROIs_filename, xdim, ydim, zdim, output_path):
 	list_K = np.zeros(N_indices)[:, np.newaxis]
 	list_C = np.zeros((N_frames, N_indices))
 
-	K1_list = [0] * 7
-	k2_list = [0] * 7
-	k3_list = [0] * 7
-	k4_list = [0] * 7
-	Vp_list = [0] * 7
+	K1_list = [0] * N_indices
+	k2_list = [0] * N_indices
+	k3_list = [0] * N_indices
+	k4_list = [0] * N_indices
+	Vp_list = [0] * N_indices
 	i = 0
-	for array in values:
+	for array in kinetic_parameters:
 		K1_list[i] = (array[0])
 		k2_list[i] = (array[1])
 		k3_list[i] = (array[2])
@@ -176,26 +179,26 @@ def generate_graphics(values, ROIs_filename, xdim, ydim, zdim, output_path):
 		list_slope[index] = b[0][0]
 		list_intercept[index] = b[0][1]
 
-		fig, ax = plt.subplots(1)
-		ax.set_xlabel('t')
-		ax.set_ylabel('C')
-
-		ax.plot(t, C, linewidth=4, markeredgecolor='k', markersize=12)
-
-		plot_style = plot_shape0[index] + plot_shape1[index] + plot_shape2[index]
-
-		if 'o' in plot_style:
-			ax.plot(t, C, marker='o')
-		elif '+' in plot_style:
-			ax.plot(t, C, marker='+')
-		elif '^' in plot_style:
-			ax.plot(t, C, marker='^')
-		else:
-			ax.plot(t, C)
-
-		Legend = ['Myocardium','Blood','Background','Liver','Lung','Liver Tumor','Lung Tumor']
-		plt.legend([Legend[index]])
 		if plot_figures:
+			fig, ax = plt.subplots(1)
+			ax.set_xlabel('t')
+			ax.set_ylabel('C')
+
+			ax.plot(t, C, linewidth=4, markeredgecolor='k', markersize=12)
+
+			plot_style = plot_shape0[index] + plot_shape1[index] + plot_shape2[index]
+
+			if 'o' in plot_style:
+				ax.plot(t, C, marker='o')
+			elif '+' in plot_style:
+				ax.plot(t, C, marker='+')
+			elif '^' in plot_style:
+				ax.plot(t, C, marker='^')
+			else:
+				ax.plot(t, C)
+
+			Legend = ['Myocardium','Blood','Background','Liver','Lung','Liver Tumor','Lung Tumor']
+			plt.legend([Legend[index]])
 			plt.show(block=False)
 
 	K_image = np.zeros((xdim, ydim, zdim))
@@ -242,3 +245,5 @@ def generate_graphics(values, ROIs_filename, xdim, ydim, zdim, output_path):
 	BImageFilename = 'standard_fit_B_image.nii'
 	BImageFilepath = os.path.join(output_path, BImageFilename)
 	nib.save(finalizedBImage, BImageFilepath)
+
+	return

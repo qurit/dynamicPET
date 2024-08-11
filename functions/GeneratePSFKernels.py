@@ -29,7 +29,7 @@ def generate_PSF_kernels(PSF_Kernel, xdim, SUBSETS, NUM_BINS, bin_size, scanner)
     KernelsSet_hold = np.zeros((NUM_BINS, 15, NUMVAR))
     KernelsSet = np.zeros((NUM_BINS, NUM_BINS, NUMVAR))
 
-    if (xdim * bin_size) >= D: #replaced NUM_bins * bin_size
+    if (xdim * bin_size) >= D: #replaced NUM_bins * bin_size. I don't think warning is necessary. Perhaps for input image where there is non-zero voxels near diagonals?
         ctypes.windll.user32.MessageBoxW(0, 'Object FOV hits the scanner!!', 'Warning!!!', 0)
 
     for nrv in range(NUMVAR):
@@ -54,7 +54,8 @@ def generate_PSF_kernels(PSF_Kernel, xdim, SUBSETS, NUM_BINS, bin_size, scanner)
 
         for bin in np.arange(NUM_BINS):
             source_pos = (bin - (NUM_BINS + 1) / 2) * bin_size
-            angle = np.arcsin(source_pos / r)
+            with np.errstate(invalid='ignore'): #temporary error supresion. Radon transform should be changed to circular, and # of bins should be adjusted.
+                angle = np.arcsin(source_pos / r)
             angle_deg = angle * 180/math.pi
 
             if angle == 0:
