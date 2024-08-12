@@ -88,12 +88,14 @@ def main_simulate():
         frame_name = 'input_images_frame' + str(frn) + '.nii'
         frame_path = os.path.join(output_path, frame_name)
         frame_object = np.zeros((xdim, ydim, zdim))
-        frame_object_slice = np.zeros((xdim, ydim))
         frame_object = nib.load(frame_path).get_fdata()
 
         num_cores = os.cpu_count()
+        chunksize = round(zdim/num_cores/5)
+        if not chunksize:
+            chunksize = 1
         args = [(frame_object[:,:,z], mu_map_3D[:, :, z], ITERATIONS, SUBSETS, xdim, bin_size, voxel_size, d_z, frame_durations[int(frame)], input_path, output_path, config, scanner, NUM_BINS, KernelFull, KernelsSet, NUMVAR) for z in np.arange(zdim)]
-        final_image_3D_slices = process_map(multicore_recon, args, max_workers=num_cores)
+        final_image_3D_slices = process_map(multicore_recon, args, max_workers=num_cores, chunksize=chunksize)
 
         for z, img in enumerate(final_image_3D_slices):
             final_image_3D[:, :, z] = img

@@ -82,7 +82,7 @@ def generate_graphics(kinetic_parameters, ROIs_filename, xdim, ydim, zdim, outpu
 
 	ROI_image = nib.load(ROIs_filename).get_fdata()
 
-	image_4D = np.zeros((xdim, ydim, zdim, size_t))
+	image_4D = np.memmap('image_4D.txt', shape = (xdim, ydim, zdim, size_t), dtype=np.float32, mode='w+')
 
 	intercept_image = np.zeros((xdim, ydim, zdim))
 	slope_image = np.zeros((xdim, ydim, zdim))
@@ -206,9 +206,10 @@ def generate_graphics(kinetic_parameters, ROIs_filename, xdim, ydim, zdim, outpu
 
 	flag = 0
 
-	for xx in tqdm(np.arange(xdim)):
-		for yy in np.arange(ydim):
-			for zz in np.arange(zdim):
+	for zz in tqdm(np.arange(zdim)):
+		for xx in np.arange(xdim):
+			for yy in np.arange(ydim):
+       
 				index = int(ROI_image[xx, yy, zz])
 
 				if index == 0:
@@ -218,14 +219,15 @@ def generate_graphics(kinetic_parameters, ROIs_filename, xdim, ydim, zdim, outpu
 				image_4D[xx, yy, zz, :] = C
 				K_image[xx, yy, zz] = list_slope[index-1]
 				B_image[xx, yy, zz] = list_intercept[index-1]
+    
+	print("Writing Images to File:")
 
-	mean_value = np.mean(np.mean(np.mean(np.mean(image_4D))))
-
-	for i in np.arange(N1):
+	for i in tqdm(np.arange(N1)):
 		index = i + N0
 		filename = 'input_images_frame{}.nii'.format(i + 1)
 		filepath = os.path.join(output_path, filename)
-		finalized_input = nib.Nifti1Image(image_4D[:,:,:,index], affine=np.eye(4))
+		final_image = np.array(image_4D[:,:,:,index])
+		finalized_input = nib.Nifti1Image(final_image, affine=np.eye(4))
 		nib.save(finalized_input, filepath)
 
 	with open(sp_list_filename, 'w') as file:
@@ -246,4 +248,5 @@ def generate_graphics(kinetic_parameters, ROIs_filename, xdim, ydim, zdim, outpu
 	BImageFilepath = os.path.join(output_path, BImageFilename)
 	nib.save(finalizedBImage, BImageFilepath)
 
+	os.remove('image_4D.txt')
 	return

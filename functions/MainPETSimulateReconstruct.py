@@ -50,8 +50,6 @@ def perform_reconstruction(image_input, atten_input, ITERATIONS, SUBSETS, xdim, 
     theta_m = theta.reshape((round(len(theta)/SUBSETS), SUBSETS))
     angles_m = len(theta_m)
 
-    TmrCount = 1
-
     np.random.seed()
     random_numbers = [np.random.random() for _ in range(5)]
     random_numbers
