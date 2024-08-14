@@ -99,7 +99,6 @@ def perform_reconstruction(image_input, atten_input, ITERATIONS, SUBSETS, xdim, 
     else:
         norm_original = np.ones((NUM_BINS, int(thdim)))
 
-    Y2, X2 = np.meshgrid(np.arange(1, 7), np.arange(1, 7))
     filter = 1
     filter_tr = np.array([[filter]])
 
