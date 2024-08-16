@@ -10,19 +10,11 @@ from sklearn.linear_model import LinearRegression
 import os
 from tqdm import tqdm
 
-def generate_graphics(kinetic_parameters, ROIs_filename, xdim, ydim, zdim, output_path):
+def generate_graphics(kinetic_parameters, ROIs_filename, xdim, ydim, zdim, output_path, organs):
 	sp_list_filename = os.path.join(output_path, 'sp_NP6.txt')
 	cp_list_filename = os.path.join(output_path, 'cp_NP6.txt')
 
-	plot_shape0 = ["b","r","g","c","k","b","r","g","c","k","b"]
-	plot_shape1 = [":","--","-.","-","-","--","-.","-",":","--"]
-	plot_shape2 = ["o","x","+","*","<","d","o","x","+","*","<","d"]
-
-	plot_figures = 0
-
-	if plot_figures:
-		plt.plot()
-		plt.show()
+	plot_figures = 1
 
 	N0 = 24
 	N1 = 6
@@ -34,31 +26,18 @@ def generate_graphics(kinetic_parameters, ROIs_filename, xdim, ydim, zdim, outpu
 	t_end = [number/60 for number in t_end]
 
 	size_t = len(t_end)
-	delta_t = []
 	t_mid = []
 	for i in range(len(t_begin)):
-		difference = t_end[i] - t_begin[i]
-		delta_t.append(difference)
 		mid = (t_end[i] + t_begin[i])/2
 		t_mid.append(mid)
 
 	Cp_value = [57.9010205202840, 95.2180974013146, 90.5952432455687, 76.4445831298871, 63.3003938410782, 53.5705284761335, 47.0172406580489, 42.7947864442063, 40.1138049471022, 38.3948185336720, 37.2548925184664, 36.4555447590628, 35.5993410153805, 34.7500963158946, 34.0324557436423, 33.3703352992132, 32.7403259283634, 32.1349790920160, 31.5515644406990, 30.9887341399848, 30.4455548405084, 29.9212309257113, 29.4150258503855, 28.9262394471749, 24.4245775698491, 19.5132444438185, 16.7331897598208, 14.9450865710512, 13.6372965951278, 12.5787438198229]
 	Cp_value = [number * 1000 for number in Cp_value]
-	color = 'red'
-	thickness = 3
-
-	if plot_figures:
-		plt.plot(t_mid, Cp_value, color=color, linewidth=thickness) #
-		plt.grid(False)
-		plt.title('FDG Values')
-		plt.legend(['Input Function'])
-		plt.show(block=False)
 
 	N_indices = len(kinetic_parameters)
-	num_fits = N_indices
 
-	list_intercept = np.zeros(N_indices)[:, np.newaxis]
-	list_slope = np.zeros(N_indices)[:, np.newaxis]
+	list_intercept = np.zeros(N_indices)
+	list_slope = np.zeros(N_indices)
 
 	list_K = np.zeros(N_indices)[:, np.newaxis]
 	list_C = np.zeros((N_frames, N_indices))
@@ -78,26 +57,15 @@ def generate_graphics(kinetic_parameters, ROIs_filename, xdim, ydim, zdim, outpu
 		i = i + 1
 
 	ROI_image = np.zeros((xdim, ydim, zdim))
-	ROI_image_slice = np.zeros((xdim, ydim))
-
 	ROI_image = nib.load(ROIs_filename).get_fdata()
 
 	image_4D = np.memmap('image_4D.txt', shape = (xdim, ydim, zdim, size_t), dtype=np.float32, mode='w+')
-
-	intercept_image = np.zeros((xdim, ydim, zdim))
-	slope_image = np.zeros((xdim, ydim, zdim))
-	DV_image = np.zeros((xdim, ydim, zdim))
-
-	intercept_image_REF = np.zeros((xdim, ydim, zdim))
-	slope_image_REF = np.zeros((xdim, ydim, zdim))
-	DVR_image = np.zeros((xdim, ydim, zdim))
 
 	delt = 0.01
 	t_interp = np.arange(0, t_end[N_frames - 1] + delt * 2, delt)
 	f_linear = interp1d(t_mid, Cp_value, 'linear', fill_value='extrapolate')
 	Cp_value_interp = f_linear(t_interp)
 
-	cp_t = Cp_value
 	cp_t2 = Cp_value_interp
 
 	t = t_mid
@@ -130,8 +98,6 @@ def generate_graphics(kinetic_parameters, ROIs_filename, xdim, ydim, zdim, outpu
 			f0 = f0 + 1
 		cp_NP6[f] = Cp_NP6_value_interp[f0]
 
-	true_integral = sp[N0] - sp_NP6[0]
-
 	for index in np.arange(0, N_indices):
 		K1 = K1_list[index]
 		k2 = k2_list[index]
@@ -152,9 +118,9 @@ def generate_graphics(kinetic_parameters, ROIs_filename, xdim, ydim, zdim, outpu
 		f_interp = interp1d(t2, result)
 		C = f_interp(t)
 
-		K = K1 * k3/(k2 + k3)
+		K = K1 * k3/(k2 + k3) #not used
 
-		list_K[index] = K
+		list_K[index] = K #not used
 		list_C[:, index] = C
 
 	for index in np.arange(0, N_indices):
@@ -165,47 +131,27 @@ def generate_graphics(kinetic_parameters, ROIs_filename, xdim, ydim, zdim, outpu
 
 		y = y0[N0:N_frames]
 		x = x0[N0:N_frames]
-		Ones = np.ones(N1)
 
 		y_t = y[:, np.newaxis]
-		X = np.zeros((6, 2))
-		for i in np.arange(0, N1):
-			X[i,:] = [x[i], Ones[i]]
+		X = np.array([([i, 1]) for i in x])
 
 		model = LinearRegression()
 		model.fit(X, y_t)
-		b = model.coef_
+		list_slope[index], list_intercept[index] = model.coef_[0]
 
-		list_slope[index] = b[0][0]
-		list_intercept[index] = b[0][1]
-
-		if plot_figures:
-			fig, ax = plt.subplots(1)
-			ax.set_xlabel('t')
-			ax.set_ylabel('C')
-
-			ax.plot(t, C, linewidth=4, markeredgecolor='k', markersize=12)
-
-			plot_style = plot_shape0[index] + plot_shape1[index] + plot_shape2[index]
-
-			if 'o' in plot_style:
-				ax.plot(t, C, marker='o')
-			elif '+' in plot_style:
-				ax.plot(t, C, marker='+')
-			elif '^' in plot_style:
-				ax.plot(t, C, marker='^')
-			else:
-				ax.plot(t, C)
-
-			Legend = ['Myocardium','Blood','Background','Liver','Lung','Liver Tumor','Lung Tumor']
-			plt.legend([Legend[index]])
-			plt.show(block=False)
+		plt.plot(t, C, linewidth=4, markeredgecolor='k', markersize=12)
+		plt.plot(t, C, marker='o')
+		plt.subplot(3,math.ceil(N_indices/3),(index+2))
+   
+	if plot_figures:
+		plt.plot(t_mid, Cp_value, color='red', linewidth=3)
+		plt.subplot(3,math.ceil(N_indices/3),1)
+		# plt.legend(organs, 'Input Function') to fix
+		plt.show(block=False)
 
 	K_image = np.zeros((xdim, ydim, zdim))
 	B_image = np.zeros((xdim, ydim, zdim))
-
-	flag = 0
-
+ 
 	for zz in tqdm(np.arange(zdim)):
 		for xx in np.arange(xdim):
 			for yy in np.arange(ydim):
@@ -214,9 +160,8 @@ def generate_graphics(kinetic_parameters, ROIs_filename, xdim, ydim, zdim, outpu
 
 				if index == 0:
 					continue
-				C = list_C[:, index-1]
 
-				image_4D[xx, yy, zz, :] = C
+				image_4D[xx, yy, zz, :] = list_C[:, index-1]
 				K_image[xx, yy, zz] = list_slope[index-1]
 				B_image[xx, yy, zz] = list_intercept[index-1]
     

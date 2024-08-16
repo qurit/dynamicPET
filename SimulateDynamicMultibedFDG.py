@@ -31,6 +31,12 @@ def main_simulate():
     with open("config.json", 'r') as f:
         config = json.load(f)
         
+    log_path = os.path.join(output_path, 'log.txt')
+    with open(log_path, 'w') as f:
+        f.write(f'{now_str}\n')
+        for key, value in config.items():
+            f.write(f'{key}: {value}\n')
+        
     ROIs_filename = config["ROIs_filename"]
     output_filename = config["output_filename"]
     mu_map_file = config["mu_map_file"]
@@ -55,6 +61,7 @@ def main_simulate():
     with open(os.path.join(input_path, kinetic_parameters_filename), 'r') as file:
         parameters = json.load(file)
     kinetic_parameters = [value for key, value in parameters.items()]
+    organs = [key for key, value in parameters.items()]
 
     mu_map_filepath = os.path.join(input_path, mu_map_file)
     mu_map_3D = nib.load(mu_map_filepath).get_fdata()
@@ -78,7 +85,7 @@ def main_simulate():
     
     ROIs_filepath = os.path.join(input_path, ROIs_filename)
     print('Generating Compartmental Images:')
-    generate_graphics(kinetic_parameters, ROIs_filepath, xdim, ydim, zdim, output_path)
+    generate_graphics(kinetic_parameters, ROIs_filepath, xdim, ydim, zdim, output_path, organs)
 
     KernelFull_hold, KernelFull, KernelsSet_hold, KernelsSet, NUMVAR = generate_PSF_kernels(PSF_Kernel, xdim, SUBSETS, NUM_BINS, bin_size, scanner)
 
@@ -119,11 +126,7 @@ def main_simulate():
     hours, remainder = divmod(elapsed_time, 3600)
     minutes, seconds = divmod(remainder, 60)
 
-    log_path = os.path.join(output_path, 'log.txt')
     with open(log_path, 'w') as f:
-        f.write(f'{now_str}\n')
-        for key, value in config.items():
-            f.write(f'{key}: {value}\n')
         f.write("Time elapsed: {:02d}:{:02d}:{:02d}".format(int(hours), int(minutes), int(seconds)))
 
     print("Time elapsed: {:02d}:{:02d}:{:02d}".format(int(hours), int(minutes), int(seconds)))

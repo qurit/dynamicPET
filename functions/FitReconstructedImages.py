@@ -55,7 +55,7 @@ def fitImages(total_frames, xsize, ysize, zsize, ITERATIONS, SUBSETS, output_pat
 
 	num_cores = os.cpu_count()
 	chunksize = round(zsize/num_cores/5)
-	args = [(zz, total_frames, xsize, ysize, image, sp_list, cp_list) for xx in range(0, zsize)]
+	args = [(zz, total_frames, xsize, ysize, image, sp_list, cp_list) for zz in range(0, zsize)]
 	results = process_map(multicore_regression, args, max_workers=num_cores, chunksize=chunksize)
 	K_image_slices, B_image_slices = zip(*results)
   
