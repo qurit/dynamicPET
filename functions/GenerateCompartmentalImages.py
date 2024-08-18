@@ -123,6 +123,12 @@ def generate_graphics(kinetic_parameters, ROIs_filename, xdim, ydim, zdim, outpu
 		list_K[index] = K #not used
 		list_C[:, index] = C
 
+	if plot_figures:
+		plt.figure()
+		plt.subplot(3,math.ceil(N_indices/3), 1)
+		plt.plot(t_mid, Cp_value, color='red', linewidth=3)
+		plt.title('Input Function')
+  
 	for index in np.arange(0, N_indices):
 		C = list_C[:, index]
 
@@ -139,15 +145,14 @@ def generate_graphics(kinetic_parameters, ROIs_filename, xdim, ydim, zdim, outpu
 		model.fit(X, y_t)
 		list_slope[index], list_intercept[index] = model.coef_[0]
 
+		plt.subplot(3,math.ceil(N_indices/3),(index+2))
 		plt.plot(t, C, linewidth=4, markeredgecolor='k', markersize=12)
 		plt.plot(t, C, marker='o')
-		plt.subplot(3,math.ceil(N_indices/3),(index+2))
-   
+		plt.title(organs[index])
+
 	if plot_figures:
-		plt.plot(t_mid, Cp_value, color='red', linewidth=3)
-		plt.subplot(3,math.ceil(N_indices/3),1)
-		# plt.legend(organs, 'Input Function') to fix
 		plt.show(block=False)
+		input()
 
 	K_image = np.zeros((xdim, ydim, zdim))
 	B_image = np.zeros((xdim, ydim, zdim))
