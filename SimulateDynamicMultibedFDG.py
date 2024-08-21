@@ -2,7 +2,7 @@ import time
 import nibabel as nib
 import numpy as np
 import math
-from functions.GenerateCompartmentalImages import generate_graphics
+from functions.km import generate_graphics
 from functions.GeneratePSFKernels import generate_PSF_kernels
 from functions.MainPETSimulateReconstruct import perform_reconstruction
 from functions.FitReconstructedImages import fitImages
@@ -43,13 +43,16 @@ def main_simulate():
     frames = config["frames"]
     ITERATIONS = config["ITERATIONS"]
     SUBSETS = config["SUBSETS"]
-    frame_durations = [frame/60 for frame in config["frame_durations"]]
+    input_frame_durations = [frame/60 for frame in config["input_frame_durations"]]
+    output_frame_durations = [frame/60 for frame in config["output_frame_durations"]]
     mu_units = config["mu_units"]
     kinetic_parameters_filename = config["kinetic_parameters_filename"]
     smoothing_kernel_fwhm = config["smoothing_kernel_fwhm"]
-    
     PSF_Kernel = config["PSF_Kernel"]
     SMOOTHING = config["SMOOTHING"]
+
+    if not output_frame_durations:
+        output_frame_durations = input_frame_durations
 
     with open(os.path.join(input_path, 'scanner_info.json'), 'r') as f:
         scanner_info = json.load(f)
@@ -84,8 +87,8 @@ def main_simulate():
         raise ValueError("mu_units must be 'mm', 'cm', or '/voxel'")
     
     ROIs_filepath = os.path.join(input_path, ROIs_filename)
-    print('Generating Compartmental Images:')
-    generate_graphics(kinetic_parameters, ROIs_filepath, xdim, ydim, zdim, output_path, organs)
+    print('Generating Compartmental Images...')
+    generate_graphics(output_path, config, kinetic_parameters, ROIs_filepath, xdim, ydim, zdim)
 
     KernelFull_hold, KernelFull, KernelsSet_hold, KernelsSet, NUMVAR = generate_PSF_kernels(PSF_Kernel, xdim, SUBSETS, NUM_BINS, bin_size, scanner)
 
@@ -101,7 +104,7 @@ def main_simulate():
         chunksize = round(zdim/num_cores/5)
         if not chunksize:
             chunksize = 1
-        args = [(frame_object[:,:,z], mu_map_3D[:, :, z], ITERATIONS, SUBSETS, xdim, bin_size, voxel_size, d_z, frame_durations[int(frame)], input_path, output_path, config, scanner, NUM_BINS, KernelFull, KernelsSet, NUMVAR) for z in np.arange(zdim)]
+        args = [(frame_object[:,:,z], mu_map_3D[:, :, z], ITERATIONS, SUBSETS, xdim, bin_size, voxel_size, d_z, output_frame_durations[int(frame)], input_path, output_path, config, scanner, NUM_BINS, KernelFull, KernelsSet, NUMVAR) for z in np.arange(zdim)]
         final_image_3D_slices = process_map(multicore_recon, args, max_workers=num_cores, chunksize=chunksize)
 
         for z, img in enumerate(final_image_3D_slices):
@@ -126,7 +129,7 @@ def main_simulate():
     hours, remainder = divmod(elapsed_time, 3600)
     minutes, seconds = divmod(remainder, 60)
 
-    with open(log_path, 'w') as f:
+    with open(log_path, 'a') as f:
         f.write("Time elapsed: {:02d}:{:02d}:{:02d}".format(int(hours), int(minutes), int(seconds)))
 
     print("Time elapsed: {:02d}:{:02d}:{:02d}".format(int(hours), int(minutes), int(seconds)))
