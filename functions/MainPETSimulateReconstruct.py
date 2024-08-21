@@ -10,7 +10,7 @@ from functions.CalculateCalibrationFactor import calib_factor
 from functions.GenerateSensitivitySinogram import gen_sens_sino
 from functions.CalculateScalingFactor import scaling_factor
 
-def perform_reconstruction(image_input, atten_input, ITERATIONS, SUBSETS, xdim, bin_size, voxel_size, d_z, ScanDuration, input_path, output_path, config, scanner, NUM_BINS, KernelFull, KernelsSet, NUMVAR):
+def perform_reconstruction(image_input, atten_input, ITERATIONS, SUBSETS, xdim, bin_size, voxel_size, d_z, ScanDuration, input_path, output_path, config, scanner, NUM_BINS, KernelFull, KernelsSet, NUMVAR, start_time):
     
     # Simulation Flags
     Num_Noise_Realz = config["Num_Noise_Realz"]
@@ -28,7 +28,6 @@ def perform_reconstruction(image_input, atten_input, ITERATIONS, SUBSETS, xdim, 
     TOF = config["TOF"]
 
     VCT_sensitivity = scanner["VCT_sensitivity"] / 1e6
-    start_time = config["start_time"]
 
     ydim = xdim
     input_xdim = xdim

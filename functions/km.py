@@ -4,10 +4,11 @@ import numpy as np
 import nibabel as nib
 from scipy.interpolate import interp1d
 from scipy import integrate
+from scipy.integrate import quad
 import math
 from scipy.signal import convolve
 import warnings
-warnings.filterwarnings("ignore", category=integrate.IntegrationWarning)
+# warnings.filterwarnings("ignore", category=integrate.IntegrationWarning)
 from tqdm import tqdm
 
 def generate_graphics(output_path, config, kinetic_parameters, ROIs_filename, xdim, ydim, zdim):
@@ -47,6 +48,9 @@ def generate_graphics(output_path, config, kinetic_parameters, ROIs_filename, xd
     
     f_linear = interp1d(tmid_in, input_function, 'linear', fill_value='extrapolate')
 
+    Cp = [f_linear(t)[()] for t in tmid_out]
+    Cp_integrated = [quad(f_linear, 0, t)[0] for t in tmid_out]
+
     end_time = (input_frame_starts[-1]+input_frame_durations[-1])/60
     delt = 0.01
     t = np.arange(0, end_time + delt * 2, delt)
@@ -79,17 +83,28 @@ def generate_graphics(output_path, config, kinetic_parameters, ROIs_filename, xd
         nib.save(finalized_input, filepath)
 
     kp =  ['K1', 'k2', 'k3', 'k4', 'Vp']
-    image = np.zeros((xdim, ydim, zdim), dtype=np.float32)
+    image = np.zeros((xdim, ydim, zdim, len(kp)+1), dtype=np.float32)
 
     for i, p in enumerate(kp):
-        image[regions>=0] = np.array(kinetic_parameters)[regions[regions>=0],i]
+        image[regions>=0, i] = np.array(kinetic_parameters)[regions[regions>=0],i]
         filename = 'grouund_truth_{}_image.nii'.format(p)
         filepath = os.path.join(output_path, filename)
-        finalized_input = nib.Nifti1Image(image, affine=np.eye(4))
+        finalized_input = nib.Nifti1Image(image[:,:,:,i], affine=np.eye(4))
         nib.save(finalized_input, filepath)
 
+    image[:,:,:,5] = np.divide(image[:,:,:,0]*image[:,:,:,2], image[:,:,:,1] + image[:,:,:,2], out=np.zeros_like(image[:,:,:,0]*image[:,:,:,2]), where=(image[:,:,:,1] + image[:,:,:,2])!=0)
+    filename = 'grouund_truth_Ki_image.nii'.format(p)
+    filepath = os.path.join(output_path, filename)
+    finalized_input = nib.Nifti1Image(image[:,:,:,5], affine=np.eye(4))
+    nib.save(finalized_input, filepath)
+
+    log_path = os.path.join(output_path, 'log.txt')
+    with open(log_path, 'a') as f:
+        f.write(f'Input Function Sampled for Output Frames: {Cp}\n')
+        f.write(f'Input Function Sampled for Output Frames (Integrated): {Cp_integrated}\n')
+
     os.remove('image_4D.txt')
-    return
+    return Cp, Cp_integrated, [i/60 for i in output_frame_starts]
 
 if __name__ == '__main__':
     with open("config.json", 'r') as f:

@@ -20,7 +20,6 @@ def regression(zz, total_frames, xsize, ysize, image, sp_list, cp_list):
 		for yy in range(0, ysize):
 			C = image[xx, yy, zz, :]
 			y = C/cp
-
 			model.fit(X, y)
 			K[xx, yy], B[xx, yy] = model.coef_
 
@@ -29,13 +28,9 @@ def regression(zz, total_frames, xsize, ysize, image, sp_list, cp_list):
 def multicore_regression(args):
     return regression(*args)
 
-def fitImages(total_frames, xsize, ysize, zsize, ITERATIONS, SUBSETS, output_path):
-	sp_list_filename = os.path.join(output_path, 'sp_NP6.txt')
-	cp_list_filename = os.path.join(output_path, 'cp_NP6.txt')
-
-	sp_list = np.loadtxt(sp_list_filename)
-	cp_list = np.loadtxt(cp_list_filename)
-
+def fitImages(total_frames, xsize, ysize, zsize, ITERATIONS, SUBSETS, output_path, Cp, Cp_integrated):
+	Cp = np.array(Cp)
+	Cp_integrated = np.array(Cp_integrated)
 	image = np.zeros((xsize, ysize, zsize, total_frames))
 	for frame in range(0, total_frames):
 		fname = 'output_images_frame'+ str(frame + 1) + '_recon_it' + str(ITERATIONS) + '_subset' + str(SUBSETS) + '.nii'
@@ -49,7 +44,7 @@ def fitImages(total_frames, xsize, ysize, zsize, ITERATIONS, SUBSETS, output_pat
 
 	num_cores = os.cpu_count()
 	chunksize = round(zsize/num_cores/5)
-	args = [(zz, total_frames, xsize, ysize, image, sp_list, cp_list) for zz in range(0, zsize)]
+	args = [(zz, total_frames, xsize, ysize, image, Cp_integrated, Cp) for zz in range(0, zsize)]
 	results = process_map(multicore_regression, args, max_workers=num_cores, chunksize=chunksize)
 	K_image_slices, B_image_slices = zip(*results)
   
@@ -70,24 +65,4 @@ def fitImages(total_frames, xsize, ysize, zsize, ITERATIONS, SUBSETS, output_pat
 
 	nib.save(finalized_K_image, filepath_K)
 	nib.save(finalized_B_image, filepath_B)
-
-if __name__ == '__main__':
-	xsize, ysize, zsize, total_frames = 128, 128, 47, 1
-	sp_list_filename = os.path.join('output/2024-08-19 10꞉22꞉38', 'sp_NP6.txt')
-	cp_list_filename = os.path.join('output/2024-08-19 10꞉22꞉38', 'cp_NP6.txt')
-
-	sp_list = np.loadtxt(sp_list_filename)
-	cp_list = np.loadtxt(cp_list_filename)
-
-	image = np.zeros((xsize, ysize, zsize, total_frames))
-	for frame in range(0, total_frames):
-		fname = 'output_images_frame'+ str(frame + 1) + '_recon_it' + str(6) + '_subset' + str(21) + '.nii'
-		fpath = os.path.join('output/2024-08-19 10꞉22꞉38', fname)
-		outImage = nib.load(fpath).get_fdata()
-		for zz in range(0, zsize):
-			image[:,:,zz,frame] = outImage[:, :, zz]
-
-	k, b = regression(35, total_frames, xsize, ysize, image, sp_list, cp_list)
-
-	plt.imshow(k)
-	plt.show()
+	return

@@ -3,7 +3,6 @@ import nibabel as nib
 import numpy as np
 import math
 from functions.km import generate_graphics
-from functions.km import generate_graphics
 from functions.GeneratePSFKernels import generate_PSF_kernels
 from functions.MainPETSimulateReconstruct import perform_reconstruction
 from functions.FitReconstructedImages import fitImages
@@ -45,17 +44,12 @@ def main_simulate():
     SUBSETS = config["SUBSETS"]
     input_frame_durations = [frame/60 for frame in config["input_frame_durations"]]
     output_frame_durations = [frame/60 for frame in config["output_frame_durations"]]
-    input_frame_durations = [frame/60 for frame in config["input_frame_durations"]]
-    output_frame_durations = [frame/60 for frame in config["output_frame_durations"]]
     mu_units = config["mu_units"]
     kinetic_parameters_filename = config["kinetic_parameters_filename"]
     smoothing_kernel_fwhm = config["smoothing_kernel_fwhm"]
     PSF_Kernel = config["PSF_Kernel"]
     SMOOTHING = config["SMOOTHING"]
     LOAD_NORMALIZATION = config["LOAD_NORMALIZATION"]
-
-    if not output_frame_durations:
-        output_frame_durations = input_frame_durations
 
     if not output_frame_durations:
         output_frame_durations = input_frame_durations
@@ -100,7 +94,7 @@ def main_simulate():
     
     ROIs_filepath = os.path.join(input_path, ROIs_filename)
     print('Generating Compartmental Images:')
-    generate_graphics(output_path, config, kinetic_parameters, ROIs_filepath, xdim, ydim, zdim)
+    Cp, Cp_integrated, output_frame_starts = generate_graphics(output_path, config, kinetic_parameters, ROIs_filepath, xdim, ydim, zdim)
 
     KernelFull_hold, KernelFull, KernelsSet_hold, KernelsSet, NUMVAR = generate_PSF_kernels(PSF_Kernel, xdim, SUBSETS, NUM_BINS, bin_size, scanner)
 
@@ -116,7 +110,7 @@ def main_simulate():
         chunksize = round(zdim/num_cores/5)
         if not chunksize:
             chunksize = 1
-        args = [(frame_object[:,:,z], mu_map_3D[:, :, z], ITERATIONS, SUBSETS, xdim, bin_size, voxel_size, d_z, output_frame_durations[int(frame)], input_path, output_path, config, scanner, NUM_BINS, KernelFull, KernelsSet, NUMVAR) for z in np.arange(zdim)]
+        args = [(frame_object[:,:,z], mu_map_3D[:, :, z], ITERATIONS, SUBSETS, xdim, bin_size, voxel_size, d_z, output_frame_durations[int(frame)], input_path, output_path, config, scanner, NUM_BINS, KernelFull, KernelsSet, NUMVAR, output_frame_starts[int(frame)]) for z in np.arange(zdim)]
         final_image_3D_slices = process_map(multicore_recon, args, max_workers=num_cores, chunksize=chunksize)
 
         final_image_3D = np.zeros((xdim, ydim, zdim), dtype=np.float32)
@@ -135,8 +129,8 @@ def main_simulate():
             filepath = os.path.join(output_path, filename)
             nib.save(smooth_image, filepath)
 
-    # print("Fitting Reconstructed Images:")
-    # fitImages(frames, xdim, ydim, zdim, ITERATIONS, SUBSETS, output_path)
+    print("Fitting Reconstructed Images:")
+    fitImages(frames, xdim, ydim, zdim, ITERATIONS, SUBSETS, output_path, Cp, Cp_integrated)
 
     t1 = time.time()
     elapsed_time = t1 - t0
