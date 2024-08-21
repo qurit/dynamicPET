@@ -137,7 +137,6 @@ def main_simulate():
     minutes, seconds = divmod(remainder, 60)
 
     with open(log_path, 'a') as f:
-    with open(log_path, 'a') as f:
         f.write("Time elapsed: {:02d}:{:02d}:{:02d}".format(int(hours), int(minutes), int(seconds)))
 
     print("Time elapsed: {:02d}:{:02d}:{:02d}".format(int(hours), int(minutes), int(seconds)))
