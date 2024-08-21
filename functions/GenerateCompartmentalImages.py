@@ -14,7 +14,7 @@ def generate_graphics(kinetic_parameters, ROIs_filename, xdim, ydim, zdim, outpu
 	sp_list_filename = os.path.join(output_path, 'sp_NP6.txt')
 	cp_list_filename = os.path.join(output_path, 'cp_NP6.txt')
 
-	plot_figures = 1
+	plot_figures = 0
 
 	N0 = 24
 	N1 = 6
@@ -118,9 +118,9 @@ def generate_graphics(kinetic_parameters, ROIs_filename, xdim, ydim, zdim, outpu
 		f_interp = interp1d(t2, result)
 		C = f_interp(t)
 
-		K = K1 * k3/(k2 + k3) #not used
+		K = K1 * k3/(k2 + k3)
 
-		list_K[index] = K #not used
+		list_K[index] = K
 		list_C[:, index] = C
 
 	if plot_figures:
