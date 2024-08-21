@@ -92,10 +92,13 @@ def perform_reconstruction(image_input, atten_input, ITERATIONS, SUBSETS, xdim, 
         elif xdim == 256:
             norm_original_file = 'norm_map_256.nii'
             norm_original_filepath = os.path.join(input_path, norm_original_file)
-            norm_original = nib.load(norm_original_filepath).get_fdata()
-
-        if norm_original.shape[0] * norm_original.shape[1] != NUM_BINS * thdim:
-            norm_original = st.resize(norm_original, (NUM_BINS, int(thdim)), order=1, preserve_range=True)
+            norm_original = nib.load(norm_original_filepath).get_fdata()    
+            
+        if xdim == 128 or xdim == 256:
+            if norm_original.shape[0] * norm_original.shape[1] != NUM_BINS * thdim:
+                norm_original = st.resize(norm_original, (NUM_BINS, int(thdim)), order=1, preserve_range=True)
+        else:
+            norm_original = np.ones((NUM_BINS, int(thdim)))
     else:
         norm_original = np.ones((NUM_BINS, int(thdim)))
 

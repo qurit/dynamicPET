@@ -41,7 +41,6 @@ def main_simulate():
     ROIs_filename = config["ROIs_filename"]
     output_filename = config["output_filename"]
     mu_map_file = config["mu_map_file"]
-    frames = config["frames"]
     ITERATIONS = config["ITERATIONS"]
     SUBSETS = config["SUBSETS"]
     input_frame_durations = [frame/60 for frame in config["input_frame_durations"]]
@@ -53,12 +52,15 @@ def main_simulate():
     smoothing_kernel_fwhm = config["smoothing_kernel_fwhm"]
     PSF_Kernel = config["PSF_Kernel"]
     SMOOTHING = config["SMOOTHING"]
+    LOAD_NORMALIZATION = config["LOAD_NORMALIZATION"]
 
     if not output_frame_durations:
         output_frame_durations = input_frame_durations
 
     if not output_frame_durations:
         output_frame_durations = input_frame_durations
+
+    frames = len(output_frame_durations)
 
     with open(os.path.join(input_path, 'scanner_info.json'), 'r') as f:
         scanner_info = json.load(f)
@@ -76,6 +78,10 @@ def main_simulate():
     mu_map_3D = nib.load(mu_map_filepath).get_fdata()
 
     xdim, ydim, zdim = mu_map_3D.shape
+
+    if LOAD_NORMALIZATION:
+        if xdim != 128 or xdim !=256:
+            print("Normalization only available for 128x128 or 256x256 images. Continuing without normalization.")
 
     voxel_size = transaxial_FOV / xdim
     d_z = axial_FOV / (zdim - 1)
@@ -111,8 +117,9 @@ def main_simulate():
         if not chunksize:
             chunksize = 1
         args = [(frame_object[:,:,z], mu_map_3D[:, :, z], ITERATIONS, SUBSETS, xdim, bin_size, voxel_size, d_z, output_frame_durations[int(frame)], input_path, output_path, config, scanner, NUM_BINS, KernelFull, KernelsSet, NUMVAR) for z in np.arange(zdim)]
-        args = [(frame_object[:,:,z], mu_map_3D[:, :, z], ITERATIONS, SUBSETS, xdim, bin_size, voxel_size, d_z, output_frame_durations[int(frame)], input_path, output_path, config, scanner, NUM_BINS, KernelFull, KernelsSet, NUMVAR) for z in np.arange(zdim)]
         final_image_3D_slices = process_map(multicore_recon, args, max_workers=num_cores, chunksize=chunksize)
+
+        final_image_3D = np.zeros((xdim, ydim, zdim), dtype=np.float32)
 
         for z, img in enumerate(final_image_3D_slices):
             final_image_3D[:, :, z] = img
