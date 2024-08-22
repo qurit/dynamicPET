@@ -12,18 +12,18 @@ from functions.CalculateScalingFactor import scaling_factor
 
 def perform_reconstruction(image_input, atten_input, ITERATIONS, SUBSETS, xdim, bin_size, voxel_size, d_z, ScanDuration, input_path, output_path, config, scanner, NUM_BINS, KernelFull, KernelsSet, NUMVAR, start_time):
     
-    # Simulation Flags
-    Num_Noise_Realz = config["Num_Noise_Realz"]
-    NOISE_REALZ_Mean_Recon_Img = config["NOISE_REALZ_Mean_Recon_Img"]
-    IMG_ABS_PRS = config["IMG_ABS_PRS"]
-    RECON_NF_NOISY = config["RECON_NF_NOISY"]
-    RECONST_RM = config["RECONST_RM"]
-    SIMULATE_RM = config["SIMULATE_RM"]
-    IMAGE_DECAYED = config["IMAGE_DECAYED"]
-    HIGH_RES_TRUE = config["HIGH_RES_TRUE"]
+    # Simulation Flags - legacy from PSF modeling paper - to be updated
+    Num_Noise_Realz = 1 #config["Num_Noise_Realz"]
+    NOISE_REALZ_Mean_Recon_Img = 1 #config["NOISE_REALZ_Mean_Recon_Img"]
+    IMG_ABS_PRS = 0 #config["IMG_ABS_PRS"]
+    RECON_NF_NOISY = 1 #config["RECON_NF_NOISY"]
+    RECONST_RM = 1 #config["RECONST_RM"]
+    SIMULATE_RM = 1 #config["SIMULATE_RM"]
+    IMAGE_DECAYED = 1 #config["IMAGE_DECAYED"]
+    HIGH_RES_TRUE = 0 #config["HIGH_RES_TRUE"]
     LOAD_ATTENUATION = config["LOAD_ATTENUATION"]
     LOAD_NORMALIZATION = config["LOAD_NORMALIZATION"]
-    AOC_ind = config["AOC_ind"]
+    AOC_ind = 2 #config["AOC_ind"] - only use concentration not activity i.e [Bq/mL] not [Bq]
     AOC_unit = config["AOC_unit"]
     TOF = config["TOF"]
 

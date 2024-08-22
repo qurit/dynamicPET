@@ -2,7 +2,7 @@ import time
 import nibabel as nib
 import numpy as np
 import math
-from functions.km import generate_graphics
+from functions.GenerateCompartmentalImages import generate_graphics
 from functions.GeneratePSFKernels import generate_PSF_kernels
 from functions.MainPETSimulateReconstruct import perform_reconstruction
 from functions.FitReconstructedImages import fitImages
@@ -47,7 +47,7 @@ def main_simulate():
     mu_units = config["mu_units"]
     kinetic_parameters_filename = config["kinetic_parameters_filename"]
     smoothing_kernel_fwhm = config["smoothing_kernel_fwhm"]
-    PSF_Kernel = config["PSF_Kernel"]
+    PSF_Kernel = 1 #config["PSF_Kernel"] 
     SMOOTHING = config["SMOOTHING"]
     LOAD_NORMALIZATION = config["LOAD_NORMALIZATION"]
 
