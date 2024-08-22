@@ -17,44 +17,32 @@
 		* "output_filename": name of output file
     	* "ROIs_filename": name of input ROI bitmask file (.nii)
     	* "mu_map_file": name of input MU map file (.nii)
-    	* "frames": number of frames to be simulated
     	* "ITERATIONS": number of iterations for OSEM reconstruction
     	* "SUBSETS": number of subsets for OSEM reconstruction
     	* "mu_units": units of input MU map (/mm, /cm, or /voxel)
     	* "smoothing_kernel_fwhm" : post reconstruction smoothing kernel size (mm)
     	* "scanner": specified scanner model (see scanner_info.json for options)
     	* "kinetic_parameters_filename" : name of kinetic parameter input file (.json)
-    	* "start_time" : scan start time (minutes)
-    	* "frame_durations" : duration of frames (as array, in seconds)
+    	* "input_frame_durations" : duration of each frame of input function as comma delimited list (sec)
+    	* "input_frame_starts" : start time of each frame as comma delimted list, frames considered to be successive if this is left blank (sec)
+		* "input_function_concentration" : input function for kinetic modeling (any units)
+		* "input_function_time" : input function time axis, overrides input_frame_durations if used (sec)
+		* "output_frame_durations" : durations for simulated scan frames (sec)
+		* "output_frame_starts" : start time of each frame as comma delimted list, frames considered to be successive if this is left blank (sec)
+
 	* Simulation flags in config file (OFF:0, ON:1, unless otherwise specified)
-    	* "PSF_Kernel": 1,
-    	* "Num_Noise_Realz" : 1,
-    	* "NOISE_REALZ_Mean_Recon_Img" : 1,
-    	* "IMG_ABS_PRS" : 0,
-    	* "RECON_NF_NOISY" : 1,
-    	* "RECONST_RM" : 1,
-    	* "SIMULATE_RM" : 1,
-    	* "IMAGE_DECAYED" : 0,
-    	* "HIGH_RES_TRUE" : 0,
-    	* "LOAD_ATTENUATION" : 1,
-    	* "LOAD_NORMALIZATION" : 0,
-    	* "TOF" : 1,
-    	* "AOC_ind" : 2,
-    	* "AOC_unit" : 1,
-    	* "SMOOTHING" : post reconstruction smoothing
+    	* "LOAD_ATTENUATION" : enable attenuation correction from mu_map_file
+    	* "LOAD_NORMALIZATION" : enable normalization (only availble for 128x128 & 256x256 images)
+    	* "TOF" : enable correction factor to emulate reduced noise in TOF reconstruction
+    	* "AOC_unit" : units of input function, 1 for [Bq/mL], 2 for [kBq/mL], 3 for [MBq/mL]
+    	* "SMOOTHING" : enable post reconstruction smoothing, saved in addition to unsmoothed images
+* Kinetic Parameters should be stored in kinetic_parameters.json in the following order: 'K1', 'k2', 'k3', 'k4', 'Vp'
 
 ## Authorship
-The original simulation code was written by Saeed Ashrafinia (JHU) in MATLAB for simulation of 2D PET frames for the purpose of evaluating PSF modeling.
+The original simulation code was written by Saeed Ashrafinia in MATLAB for simulation of 2D PET frames for the purpose of evaluating PSF modeling (https://github.com/ashrafinia/PET_sim_recon).
 
-A wrapper function for this 2D simulation was developed by Kyung Nam (UBC).
+A wrapper function for this 2D simulation was developed by Kyung-Nam Lee to enable simulation of dynamic PET (https://github.com/qurit/PET_Sim_Recon_Updated).
 
 This MATLAB program was converted to python by Nolla Sherifi (*nolla.sherifi@tum.de*) at the Technical University of Munich.
 
-Finally, the python code was refactored for performance and ease of use by James Fowler (UBC). Additional development was also done to improve the accuracy of the simulation, and allow for different imaging scenarios. This repository begins with changes implemented by James.
-
-* Image Comparison
-	* File **CompareOutputImages.py** calculates the following metrics between MATLAB and Python generated files:
-		* Mean Squared Error (MSE)
-	  	* Peak Signal to Noise Ratio (PSNR)
-	  	* Structural Similarity Index (SSIM)
-	* This file is run independently.
+Finally, the python code was refactored for performance and ease of use by James Fowler. Additional development was also done to improve the accuracy of the simulation, and allow for different imaging scenarios. This repository begins with changes implemented by James.
