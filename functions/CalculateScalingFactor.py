@@ -22,7 +22,6 @@ def scaling_factor(BqDim_ind, d_x, d_y, d_z, t1, t2, lambda_val, calibration_fac
         decay_factor = np.exp(-lambda_val * t1) * (1 / (lambda_val * delta_t)) * (1 - np.exp(-lambda_val * delta_t))
     else:
         decay_factor = 1
-
     # Scaling factor calculation
     scale_factor = ratio * vol * (60 * delta_t) * decay_factor * calibration_factor * TOF_factor
 

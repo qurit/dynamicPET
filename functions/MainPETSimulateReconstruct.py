@@ -10,25 +10,24 @@ from functions.CalculateCalibrationFactor import calib_factor
 from functions.GenerateSensitivitySinogram import gen_sens_sino
 from functions.CalculateScalingFactor import scaling_factor
 
-def perform_reconstruction(image_input, atten_input, ITERATIONS, SUBSETS, xdim, bin_size, voxel_size, d_z, ScanDuration, input_path, output_path, config, scanner, NUM_BINS, KernelFull, KernelsSet, NUMVAR):
+def perform_reconstruction(image_input, atten_input, ITERATIONS, SUBSETS, xdim, bin_size, voxel_size, d_z, ScanDuration, input_path, output_path, config, scanner, NUM_BINS, KernelFull, KernelsSet, NUMVAR, start_time):
     
-    # Simulation Flags
-    Num_Noise_Realz = config["Num_Noise_Realz"]
-    NOISE_REALZ_Mean_Recon_Img = config["NOISE_REALZ_Mean_Recon_Img"]
-    IMG_ABS_PRS = config["IMG_ABS_PRS"]
-    RECON_NF_NOISY = config["RECON_NF_NOISY"]
-    RECONST_RM = config["RECONST_RM"]
-    SIMULATE_RM = config["SIMULATE_RM"]
-    IMAGE_DECAYED = config["IMAGE_DECAYED"]
-    HIGH_RES_TRUE = config["HIGH_RES_TRUE"]
+    # Simulation Flags - legacy from PSF modeling paper - to be updated
+    Num_Noise_Realz = 1 #config["Num_Noise_Realz"]
+    NOISE_REALZ_Mean_Recon_Img = 1 #config["NOISE_REALZ_Mean_Recon_Img"]
+    IMG_ABS_PRS = 0 #config["IMG_ABS_PRS"]
+    RECON_NF_NOISY = 1 #config["RECON_NF_NOISY"]
+    RECONST_RM = 1 #config["RECONST_RM"]
+    SIMULATE_RM = 1 #config["SIMULATE_RM"]
+    IMAGE_DECAYED = 1 #config["IMAGE_DECAYED"]
+    HIGH_RES_TRUE = 0 #config["HIGH_RES_TRUE"]
     LOAD_ATTENUATION = config["LOAD_ATTENUATION"]
     LOAD_NORMALIZATION = config["LOAD_NORMALIZATION"]
-    AOC_ind = config["AOC_ind"]
+    AOC_ind = 2 #config["AOC_ind"] - only use concentration not activity i.e [Bq/mL] not [Bq]
     AOC_unit = config["AOC_unit"]
     TOF = config["TOF"]
 
     VCT_sensitivity = scanner["VCT_sensitivity"] / 1e6
-    start_time = config["start_time"]
 
     ydim = xdim
     input_xdim = xdim
@@ -49,8 +48,6 @@ def perform_reconstruction(image_input, atten_input, ITERATIONS, SUBSETS, xdim, 
     theta = np.arange(0, 180, d_theta)
     theta_m = theta.reshape((round(len(theta)/SUBSETS), SUBSETS))
     angles_m = len(theta_m)
-
-    TmrCount = 1
 
     np.random.seed()
     random_numbers = [np.random.random() for _ in range(5)]
@@ -94,14 +91,16 @@ def perform_reconstruction(image_input, atten_input, ITERATIONS, SUBSETS, xdim, 
         elif xdim == 256:
             norm_original_file = 'norm_map_256.nii'
             norm_original_filepath = os.path.join(input_path, norm_original_file)
-            norm_original = nib.load(norm_original_filepath).get_fdata()
-
-        if norm_original.shape[0] * norm_original.shape[1] != NUM_BINS * thdim:
-            norm_original = st.resize(norm_original, (NUM_BINS, int(thdim)), order=1, preserve_range=True)
+            norm_original = nib.load(norm_original_filepath).get_fdata()    
+            
+        if xdim == 128 or xdim == 256:
+            if norm_original.shape[0] * norm_original.shape[1] != NUM_BINS * thdim:
+                norm_original = st.resize(norm_original, (NUM_BINS, int(thdim)), order=1, preserve_range=True)
+        else:
+            norm_original = np.ones((NUM_BINS, int(thdim)))
     else:
         norm_original = np.ones((NUM_BINS, int(thdim)))
 
-    Y2, X2 = np.meshgrid(np.arange(1, 7), np.arange(1, 7))
     filter = 1
     filter_tr = np.array([[filter]])
 

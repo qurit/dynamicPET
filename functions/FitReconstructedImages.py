@@ -4,42 +4,33 @@ from sklearn.linear_model import LinearRegression
 import os
 from tqdm import tqdm
 from tqdm.contrib.concurrent import process_map
+import matplotlib
+matplotlib.use('TkAgg')
+import matplotlib.pyplot as plt
 
-def regression(xx, total_frames, ysize, zsize, image, sp_list, cp_list):
-	K = np.zeros((ysize, zsize))
-	B = np.zeros((ysize, zsize))
-	for yy in range(0, ysize):
-		for zz in range(0, zsize):
-			C = np.squeeze(image[xx, yy, zz, :])
+def regression(zz, total_frames, xsize, ysize, image, sp_list, cp_list):
+	K = np.zeros((xsize, ysize))
+	B = np.zeros((xsize, ysize))
+	x = sp_list[:total_frames] / cp_list[:total_frames]
+	X = np.column_stack((x, np.ones(total_frames)))
+	model = LinearRegression()
+	cp = cp_list[:total_frames]
 
-			y = C/cp_list
-			x = sp_list/cp_list
-
-			Ones = np.ones(total_frames)
-
-			X = np.zeros((6, 2))
-			for i in np.arange(0, total_frames):
-				X[i,:] = [x[i], Ones[i]]
-			
-			model = LinearRegression()
+	for xx in range(0, xsize):
+		for yy in range(0, ysize):
+			C = image[xx, yy, zz, :]
+			y = C/cp
 			model.fit(X, y)
-			b = model.coef_
-
-			K[yy, zz] = b[0]
-			B[yy, zz] = b[1]
+			K[xx, yy], B[xx, yy] = model.coef_
 
 	return K, B
 
 def multicore_regression(args):
     return regression(*args)
 
-def fitImages(total_frames, xsize, ysize, zsize, ITERATIONS, SUBSETS, output_path):
-	sp_list_filename = os.path.join(output_path, 'sp_NP6.txt')
-	cp_list_filename = os.path.join(output_path, 'cp_NP6.txt')
-
-	sp_list = np.loadtxt(sp_list_filename)
-	cp_list = np.loadtxt(cp_list_filename)
-
+def fitImages(total_frames, xsize, ysize, zsize, ITERATIONS, SUBSETS, output_path, Cp, Cp_integrated):
+	Cp = np.array(Cp)
+	Cp_integrated = np.array(Cp_integrated)
 	image = np.zeros((xsize, ysize, zsize, total_frames))
 	for frame in range(0, total_frames):
 		fname = 'output_images_frame'+ str(frame + 1) + '_recon_it' + str(ITERATIONS) + '_subset' + str(SUBSETS) + '.nii'
@@ -48,21 +39,20 @@ def fitImages(total_frames, xsize, ysize, zsize, ITERATIONS, SUBSETS, output_pat
 		for zz in range(0, zsize):
 			image[:,:,zz,frame] = outImage[:, :, zz]
 
-	total_image_counts = np.squeeze(np.sum(image, axis=(0, 1, 2)))
-
 	K_image = np.zeros((xsize, ysize, zsize))
 	B_image = np.zeros((xsize, ysize, zsize))
 
 	num_cores = os.cpu_count()
-	args = [(xx, total_frames, ysize, zsize, image, sp_list, cp_list) for xx in range(0, xsize)]
-	results = process_map(multicore_regression, args, max_workers=num_cores)
+	chunksize = round(zsize/num_cores/5)
+	args = [(zz, total_frames, xsize, ysize, image, Cp_integrated, Cp) for zz in range(0, zsize)]
+	results = process_map(multicore_regression, args, max_workers=num_cores, chunksize=chunksize)
 	K_image_slices, B_image_slices = zip(*results)
+  
+	for zz, img in enumerate(K_image_slices):
+		K_image[:, :, zz] = img
 
-	for xx, img in enumerate(K_image_slices):
-		K_image[xx, :, :] = img
-
-	for xx, img in enumerate(B_image_slices):
-		B_image[xx, :, :] = img
+	for zz, img in enumerate(B_image_slices):
+		B_image[:, :, zz] = img
 
 	finalized_K_image = nib.Nifti1Image(K_image, affine=np.eye(4))
 	finalized_B_image = nib.Nifti1Image(B_image, affine=np.eye(4))
@@ -75,3 +65,4 @@ def fitImages(total_frames, xsize, ysize, zsize, ITERATIONS, SUBSETS, output_pat
 
 	nib.save(finalized_K_image, filepath_K)
 	nib.save(finalized_B_image, filepath_B)
+	return
