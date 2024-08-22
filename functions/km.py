@@ -8,7 +8,7 @@ from scipy.integrate import quad
 import math
 from scipy.signal import convolve
 import warnings
-# warnings.filterwarnings("ignore", category=integrate.IntegrationWarning)
+warnings.filterwarnings("ignore", category=integrate.IntegrationWarning)
 from tqdm import tqdm
 
 def generate_graphics(output_path, config, kinetic_parameters, ROIs_filename, xdim, ydim, zdim):
