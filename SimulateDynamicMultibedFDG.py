@@ -70,6 +70,7 @@ def main_simulate():
 
     mu_map_filepath = os.path.join(input_path, mu_map_file)
     mu_map_3D = nib.load(mu_map_filepath).get_fdata()
+    mu_map_3D = mu_map_3D[::-1, ::-1, :]
 
     xdim, ydim, zdim = mu_map_3D.shape
 

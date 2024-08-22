@@ -44,6 +44,7 @@ def generate_graphics(output_path, config, kinetic_parameters, ROIs_filename, xd
 
     ROI_image = np.zeros((xdim, ydim, zdim))
     ROI_image = nib.load(ROIs_filename).get_fdata()
+    ROI_image = ROI_image[::-1, ::-1, :]
     image_4D = np.memmap('image_4D.txt', shape = (xdim, ydim, zdim, N_frames), dtype=np.float32, mode='w+') #better way?????
     
     f_linear = interp1d(tmid_in, input_function, 'linear', fill_value='extrapolate')
