@@ -27,7 +27,7 @@
     	* "input_frame_starts" : start time of each frame as comma delimted list, frames considered to be successive if this is left blank (sec)
 		* "input_function_concentration" : input function for kinetic modeling (any units)
 		* "input_function_time" : input function time axis, overrides input_frame_durations if used (sec)
-		* "output_frame_durations" : durations for simulated scan frames (sec)
+		* "output_frame_durations" : durations for simulated scan frames (sec), will use input_frame_durations & input_frame_starts if this left blank
 		* "output_frame_starts" : start time of each frame as comma delimted list, frames considered to be successive if this is left blank (sec)
 
 	* Simulation flags in config file (OFF:0, ON:1, unless otherwise specified)
