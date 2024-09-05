@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 def regression(zz, total_frames, xsize, ysize, image, sp_list, cp_list):
 	K = np.zeros((xsize, ysize))
 	B = np.zeros((xsize, ysize))
-	x = sp_list[:total_frames] / cp_list[:total_frames]
+	x = [n / d if d != 0 else 0 for n, d in zip(sp_list[:total_frames], cp_list[:total_frames])]
 	X = np.column_stack((x, np.ones(total_frames)))
 	model = LinearRegression()
 	cp = cp_list[:total_frames]
@@ -19,7 +19,7 @@ def regression(zz, total_frames, xsize, ysize, image, sp_list, cp_list):
 	for xx in range(0, xsize):
 		for yy in range(0, ysize):
 			C = image[xx, yy, zz, :]
-			y = C/cp
+			y = np.divide(C, cp, out=np.zeros_like(C, dtype=float), where=cp != 0)
 			model.fit(X, y)
 			K[xx, yy], B[xx, yy] = model.coef_
 
@@ -28,7 +28,7 @@ def regression(zz, total_frames, xsize, ysize, image, sp_list, cp_list):
 def multicore_regression(args):
     return regression(*args)
 
-def fitImages(total_frames, xsize, ysize, zsize, ITERATIONS, SUBSETS, output_path, Cp, Cp_integrated):
+def fitImages(total_frames, xsize, ysize, zsize, ITERATIONS, SUBSETS, output_path, Cp_integrated, Cp):
 	Cp = np.array(Cp)
 	Cp_integrated = np.array(Cp_integrated)
 	image = np.zeros((xsize, ysize, zsize, total_frames))
