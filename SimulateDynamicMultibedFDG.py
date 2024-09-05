@@ -131,7 +131,7 @@ def main_simulate():
             nib.save(smooth_image, filepath)
 
     print("Fitting Reconstructed Images:")
-    fitImages(frames, xdim, ydim, zdim, ITERATIONS, SUBSETS, output_path, Cp, Cp_integrated)
+    fitImages(frames, xdim, ydim, zdim, ITERATIONS, SUBSETS, output_path, Cp_integrated, Cp)
 
     t1 = time.time()
     elapsed_time = t1 - t0
