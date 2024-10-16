@@ -236,7 +236,7 @@ def perform_reconstruction(image_input, atten_input, ITERATIONS, SUBSETS, xdim, 
                                     expected_data = data
 
                                 non_zero_exp_data = (expected_data > 0).astype(int)
-                                zero_exp_data = (expected_data == 0).astype(int)
+                                zero_exp_data = (expected_data < delta2).astype(int) # changed from zero_exp_data = (expected_data == 0).astype(int)
                                 expected_data = expected_data + delta2 * zero_exp_data
                                 ratio = non_zero_exp_data * Y_bar_realization[:,:,sub,tmpRealz]/expected_data
 
@@ -249,6 +249,7 @@ def perform_reconstruction(image_input, atten_input, ITERATIONS, SUBSETS, xdim, 
                                     ratio2 = ratio
 
                                 ratio2_inverseRadon = iradon(ratio2, theta_m[:,sub], filter_name=None, interpolation=iRadonInterp, circle=False)
+                                ratio2_inverseRadon[ratio2_inverseRadon<0] = 0
 
                                 if RECONST_RM:
                                     ratio2_inverseRadon = convolve2d(ratio2_inverseRadon, filter_tr, mode='same')
